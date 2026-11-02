@@ -18,3 +18,11 @@ Custom themes and editor plugins for [Standard Notes](https://standardnotes.com)
 ## Descriptor (`ext.json`) fields
 
 `identifier`, `name`, `content_type` (`SN|Theme` or `SN|Component`), `area` (editors: `editor-editor`), `version`, `description`, `url` (the CSS or editor page), `latest_url` (this descriptor's own URL, so the app can check for updates).
+
+## Themes
+
+- **Duo** — iA Writer Duo S typeface for the interface and note text. Install link: `https://ssj-k.github.io/sn-plugins/themes/duo/ext.json`
+
+## Credits
+
+- [iA Writer Duo](https://github.com/iaolo/iA-Fonts) typeface © Information Architects Inc., based on IBM Plex, licensed under the SIL Open Font License 1.1 (see `themes/duo/LICENSE.md`). This project is not affiliated with iA.
