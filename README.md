@@ -17,7 +17,9 @@ Custom themes and editor plugins for [Standard Notes](https://standardnotes.com)
 
 ## Descriptor (`ext.json`) fields
 
-`identifier`, `name`, `content_type` (`SN|Theme` or `SN|Component`), `area` (editors: `editor-editor`), `version`, `description`, `url` (the CSS or editor page), `latest_url` (this descriptor's own URL, so the app can check for updates).
+`identifier`, `name`, `content_type` (`SN|Theme` or `SN|Component`), `area` (editors: `editor-editor`), `version`, `description`, `url` (the CSS or editor page), `download_url` (a zip of the plugin folder; the desktop app installs from it and loads nothing from the web), `latest_url` (this descriptor's own URL, so the app can check for updates).
+
+Each plugin folder also carries a `package.json` whose `sn.main` names the main file inside the zip. Run `./build.sh` after editing a plugin to rebuild its zip.
 
 ## Themes
 
