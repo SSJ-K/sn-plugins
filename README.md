@@ -19,7 +19,7 @@ Custom themes and editor plugins for [Standard Notes](https://standardnotes.com)
 
 `identifier`, `name`, `content_type` (`SN|Theme` or `SN|Component`), `area` (editors: `editor-editor`), `version`, `description`, `url` (the CSS or editor page), `download_url` (a zip of the plugin folder; the desktop app installs from it and loads nothing from the web), `latest_url` (this descriptor's own URL, so the app can check for updates).
 
-Each plugin folder also carries a `package.json` whose `sn.main` names the main file inside the zip. Run `./build.sh` after editing a plugin to rebuild its zip.
+Each plugin folder also carries a `package.json` whose `sn.main` names the main file inside the zip. After editing a plugin, bump `version` in both `ext.json` and `package.json`, run `./build.sh` (it writes `<name>-<version>.zip`), and point `download_url` at the new zip name. A fresh filename per release keeps clients from reusing a cached package.
 
 ## Themes
 
