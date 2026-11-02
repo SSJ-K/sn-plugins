@@ -21,7 +21,7 @@ Custom themes and editor plugins for [Standard Notes](https://standardnotes.com)
 
 ## Themes
 
-- **Duo** — iA Writer Duo S typeface for the interface and note text. Install link: `https://ssj-k.github.io/sn-plugins/themes/duo/ext.json`
+- **Duo** — iA Writer Duo S typeface for the interface and note text. Install link: `https://raw.githubusercontent.com/SSJ-K/sn-plugins/main/themes/duo/ext.json`
 
 ## Credits
 
