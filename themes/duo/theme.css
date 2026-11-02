@@ -39,3 +39,18 @@
   --sn-stylekit-sans-serif-font: 'iA Writer Duo S', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
     'Helvetica Neue', var(--sn-stylekit-simplified-chinese-font), sans-serif;
 }
+
+/* The app's own stylesheet hard-codes the system font on html/body, and
+   buttons, inputs and menus inherit from there; a few places use the
+   Tailwind font-sans utility. Point them all at the same variable.
+   Code blocks, inline code and the monospace option are untouched. */
+html,
+body,
+.sn-component,
+.font-sans,
+button,
+input,
+textarea,
+select {
+  font-family: var(--sn-stylekit-sans-serif-font);
+}
