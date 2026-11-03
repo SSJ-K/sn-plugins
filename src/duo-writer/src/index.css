@@ -44,6 +44,83 @@ html, body {
   height: 100%;
 }
 
+/* Layout: optional tools row on top, writing surface fills the rest. */
+.dw-app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
+}
+
+.dw-host {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.dw-toggle {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--sn-stylekit-neutral-color, #9a9a9a);
+  font: inherit;
+  font-size: 18px;
+  line-height: 28px;
+  opacity: 0.55;
+  cursor: pointer;
+}
+.dw-toggle:hover { opacity: 1; }
+
+.dw-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 44px 6px 12px;
+  border-bottom: 1px solid var(--sn-stylekit-border-color, #e6e6e6);
+  color: var(--sn-stylekit-neutral-color, #777);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.dw-btn, .dw-select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 3px 8px;
+  min-width: 32px;
+  min-height: 30px;
+  cursor: pointer;
+}
+.dw-btn:hover, .dw-select:hover { border-color: var(--sn-stylekit-border-color, #ddd); }
+.dw-btn.dw-active { color: var(--sn-stylekit-foreground-color, #1a1a1a); }
+.dw-select { padding-right: 4px; }
+
+.dw-find { display: inline-flex; align-items: center; gap: 4px; }
+.dw-find-input {
+  font: inherit;
+  color: var(--sn-stylekit-foreground-color, #1a1a1a);
+  background: var(--sn-stylekit-background-color, #fff);
+  border: 1px solid var(--sn-stylekit-border-color, #ddd);
+  border-radius: 6px;
+  padding: 4px 8px;
+  width: 11em;
+  max-width: 40vw;
+}
+.dw-count { min-width: 2em; text-align: center; font-size: 12px; }
+
+.dw-match { background-color: rgba(255, 200, 0, 0.35); border-radius: 2px; }
+
 .cm-editor {
   height: 100%;
   font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
