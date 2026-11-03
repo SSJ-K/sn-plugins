@@ -1,0 +1,83 @@
+/* Duo Writer, step 1: Duo S at 18px / 1.6 in a centred column.
+   Fonts are copied to fonts/ next to index.html at build time; the relative
+   path works from GitHub Pages and from the desktop app's local package. */
+@import 'sn-extension-api/dist/sn.min.css';
+
+@font-face {
+  font-family: 'iA Writer Duo S';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('iA Writer Duo S'), local('iAWriterDuoS-Regular'), url('fonts/iAWriterDuoS-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'iA Writer Duo S';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('iA Writer Duo S Italic'), local('iAWriterDuoS-Italic'), url('fonts/iAWriterDuoS-Italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'iA Writer Duo S';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('iA Writer Duo S Bold'), local('iAWriterDuoS-Bold'), url('fonts/iAWriterDuoS-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'iA Writer Duo S';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: local('iA Writer Duo S Bold Italic'), local('iAWriterDuoS-BoldItalic'), url('fonts/iAWriterDuoS-BoldItalic.woff2') format('woff2');
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--sn-stylekit-background-color, #fff);
+  color: var(--sn-stylekit-foreground-color, #1a1a1a);
+}
+
+#root {
+  height: 100%;
+}
+
+.cm-editor {
+  height: 100%;
+  font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
+  font-size: 18px;
+  line-height: 1.6;
+  background-color: transparent;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-scroller {
+  font-family: inherit;
+  line-height: inherit;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cm-content {
+  max-width: 38em;
+  margin: 0 auto;
+  padding: 32px 16px 50vh 16px;
+  caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
+}
+
+.cm-line {
+  padding: 0;
+}
+
+.cm-activeLine {
+  background-color: transparent;
+}
+
+.cm-cursor {
+  border-left-width: 2px;
+}

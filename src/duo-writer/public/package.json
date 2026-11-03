@@ -1,0 +1,7 @@
+{
+  "name": "duo-writer",
+  "version": "$VERSION$",
+  "sn": {
+    "main": "index.html"
+  }
+}
