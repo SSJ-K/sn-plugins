@@ -208,7 +208,7 @@ html, body {
   height: 100%;
   font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
   font-size: 18px;
-  line-height: 1.6;
+  line-height: 1.65; /* measured in iA Writer: 79.7 px pitch at 48.2 px text */
   background-color: transparent;
 }
 
@@ -219,7 +219,7 @@ html, body {
 /* Selectors carry .cm-editor so they outrank CodeMirror's injected base theme. */
 .cm-editor .cm-scroller {
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.65;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   justify-content: center;
@@ -229,10 +229,10 @@ html, body {
   flex-grow: 0;
   flex-shrink: 1;
   width: 100%;
-  max-width: 38em;
+  max-width: 41.4em; /* 36 em of text (60 characters) plus 2.7 em each side, as in iA Writer */
   box-sizing: border-box;
   margin: 0;
-  padding: 32px 16px 50vh calc(16px + 4ch);
+  padding: 32px 2.7em 50vh 2.7em; /* measured in iA Writer: 130 px margin at 48.2 px text */
   caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
 }
 
