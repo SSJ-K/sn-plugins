@@ -83,3 +83,65 @@ const hider = ViewPlugin.fromClass(class {
 }, {decorations: v => v.decorations});
 
 export const marksExtension = [hideMarksField, hider];
+
+// ---- Line layout: hanging marks and done checklist items ------------------
+// iA Writer: heading marks hang in the left margin so the text keeps one
+// left edge; list and quote continuation lines align with their text.
+const LINE_START = /^(\s*)(#{1,6} |[-*+] (?:\[[ xX]\] )?|\d+\. |> )/;
+const doneMark = Decoration.mark({class: 'dw-done'});
+
+function layout(view: EditorView): DecorationSet {
+  const {state} = view;
+  const hide = state.field(hideMarksField);
+  const active = hide ? linesWithCursor(state) : null;
+  const b = new RangeSetBuilder<Decoration>();
+  const items: {from: number; to: number; deco: Decoration}[] = [];
+  for (const {from, to} of view.visibleRanges) {
+    let pos = from;
+    while (pos <= to) {
+      const line = state.doc.lineAt(pos);
+      const m = LINE_START.exec(line.text);
+      if (m) {
+        const indent = m[1].length;
+        const mark = m[2];
+        const isHeading = mark.startsWith('#');
+        if (isHeading) {
+          // Hanging only while the marks are drawn; hidden marks leave the text flush.
+          const marksDrawn = !hide || active.has(line.number);
+          if (marksDrawn) items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `text-indent:-${mark.length}ch`}})});
+        } else {
+          const w = indent + mark.length;
+          items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `padding-left:${w}ch;text-indent:-${w}ch`}})});
+        }
+      }
+      pos = line.to + 1;
+    }
+  }
+  // Done checklist items: strike the text after "[x] ".
+  syntaxTree(state).iterate({
+    from: view.visibleRanges[0]?.from ?? 0,
+    to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
+    enter(node) {
+      if (node.name !== 'Task') return;
+      const marker = node.node.getChild('TaskMarker');
+      if (!marker) return;
+      const txt = state.sliceDoc(marker.from, marker.to);
+      if (/x/i.test(txt) && marker.to < node.to) items.push({from: marker.to, to: node.to, deco: doneMark});
+    }
+  });
+  items.sort((a, c) => a.from - c.from || a.to - c.to || (a.deco.spec.attributes ? -1 : 1));
+  for (const it of items) b.add(it.from, it.to, it.deco);
+  return b.finish();
+}
+
+const layoutPlugin = ViewPlugin.fromClass(class {
+  decorations: DecorationSet;
+  constructor(view: EditorView) { this.decorations = layout(view); }
+  update(u: ViewUpdate) {
+    const toggled = u.transactions.some(tr => tr.effects.some(e => e.is(setHideMarks)));
+    const reparsed = syntaxTree(u.state) !== syntaxTree(u.startState);
+    if (u.docChanged || u.viewportChanged || u.selectionSet || toggled || reparsed) this.decorations = layout(u.view);
+  }
+}, {decorations: v => v.decorations});
+
+export const layoutExtension = [layoutPlugin];

@@ -9,12 +9,13 @@ import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
 import {tags} from '@lezer/highlight';
 import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock} from './commands';
 import {findExtension} from './find';
-import {marksExtension, setHideMarks} from './marks';
+import {marksExtension, setHideMarks, layoutExtension} from './marks';
 
 const duoStyle = HighlightStyle.define([
-  {tag: tags.heading1, fontSize: '1.6em', fontWeight: 'bold'},
-  {tag: tags.heading2, fontSize: '1.3em', fontWeight: 'bold'},
-  {tag: tags.heading3, fontSize: '1.1em', fontWeight: 'bold'},
+  // iA Writer draws headings at body size, bold, with the # marks hanging in the margin.
+  {tag: tags.heading1, fontWeight: 'bold'},
+  {tag: tags.heading2, fontWeight: 'bold'},
+  {tag: tags.heading3, fontWeight: 'bold'},
   {tag: tags.heading4, fontWeight: 'bold'},
   {tag: tags.heading5, fontWeight: 'bold'},
   {tag: tags.heading6, fontWeight: 'bold'},
@@ -76,6 +77,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       syntaxHighlighting(duoStyle),
       findExtension,
       marksExtension,
+      layoutExtension,
       toolKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       editable.of(EditorView.editable.of(true)),

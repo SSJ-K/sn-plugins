@@ -27,5 +27,6 @@ export const I = {
   close: () => <svg {...base}><path d="m6 6 8 8M14 6l-8 8"/></svg>,
   prev: () => <svg {...base}><path d="m12 5-5 5 5 5"/></svg>,
   next: () => <svg {...base}><path d="m8 5 5 5-5 5"/></svg>,
-  tools: () => <svg {...base}><path d="M4 6h12M4 10h12M4 14h12"/></svg>
+  tools: () => <svg {...base}><path d="M4 6h12M4 10h12M4 14h12"/></svg>,
+  more: () => <svg {...base}><circle cx="5" cy="10" r="1.3" fill="currentColor"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>
 };

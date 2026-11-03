@@ -132,7 +132,7 @@ html, body {
 .dw-chev { position: absolute; right: 2px; pointer-events: none; display: inline-flex; }
 
 .dw-toolbar { position: relative; }
-.dw-toc {
+.dw-menu {
   position: absolute;
   top: calc(var(--dw-btn) + 12px);
   left: 8px;
@@ -147,8 +147,10 @@ html, body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   padding: 4px;
 }
-.dw-toc-item {
-  display: block;
+.dw-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   text-align: left;
   font: inherit;
@@ -162,7 +164,10 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.dw-toc-item:hover { background: var(--sn-stylekit-contrast-background-color, #f2f2f2); }
+.dw-menu-item:hover { background: var(--sn-stylekit-contrast-background-color, #f2f2f2); }
+.dw-menu-picker { cursor: default; }
+.dw-toc { right: auto; }
+.dw-toc .dw-menu-item { display: block; }
 .dw-toc-l2 { padding-left: 22px; }
 .dw-toc-l3 { padding-left: 34px; }
 .dw-toc-l4, .dw-toc-l5, .dw-toc-l6 { padding-left: 46px; }
@@ -194,7 +199,8 @@ html, body {
 .dw-listmark { color: var(--dw-mark); }
 .dw-link { color: var(--dw-fg); text-decoration: underline; text-decoration-color: var(--dw-mark); text-underline-offset: 3px; }
 .dw-url { color: var(--dw-mark); }
-.dw-code { font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace; background: var(--sn-stylekit-contrast-background-color, #f2f2f2); border-radius: 3px; }
+.dw-code { font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace; background: var(--sn-stylekit-contrast-background-color, #f2f2f2); border-radius: 3px; padding: 0.1em 0; }
+.dw-done { color: var(--dw-mark); text-decoration: line-through; }
 .dw-quote { color: var(--dw-muted); font-style: italic; }
 .dw-rule { color: var(--dw-mark); }
 
@@ -226,7 +232,7 @@ html, body {
   max-width: 38em;
   box-sizing: border-box;
   margin: 0;
-  padding: 32px 16px 50vh 16px;
+  padding: 32px 16px 50vh calc(16px + 4ch);
   caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
 }
 
