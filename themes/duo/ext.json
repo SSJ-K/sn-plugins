@@ -2,9 +2,9 @@
   "identifier": "io.github.ssj-k.duo",
   "name": "Duo",
   "content_type": "SN|Theme",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "iA Writer Duo S typeface for the interface and note text.",
   "url": "https://ssj-k.github.io/sn-plugins/themes/duo/theme.css",
-  "download_url": "https://ssj-k.github.io/sn-plugins/themes/duo/duo-1.0.1.zip",
+  "download_url": "https://ssj-k.github.io/sn-plugins/themes/duo/duo-1.0.2.zip",
   "latest_url": "https://ssj-k.github.io/sn-plugins/themes/duo/ext.json"
 }

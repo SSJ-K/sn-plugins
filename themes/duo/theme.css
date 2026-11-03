@@ -1,8 +1,9 @@
-/* Duo — a Standard Notes theme that sets the iA Writer Duo S typeface
-   for the interface and note text. Fonts: iA Writer Duo, SIL OFL 1.1,
-   see LICENSE.md in this folder. Font files are referenced relative to this
-   file so they resolve from GitHub Pages and from the desktop app's local
-   plugin folder alike; an installed copy of the font is used first. Code blocks keep the monospace font. */
+/* Duo — a Standard Notes theme that sets the iA Writer Duo S typeface for
+   note text, the way iA Writer does: the interface keeps the system font.
+   Fonts: iA Writer Duo, SIL OFL 1.1, see LICENSE.md in this folder. Font
+   files are referenced relative to this file so they resolve from GitHub
+   Pages and from the desktop app's local plugin folder alike; an installed
+   copy of the font is used first. */
 
 @font-face {
   font-family: 'iA Writer Duo S';
@@ -33,24 +34,21 @@
   src: local('iA Writer Duo S Bold Italic'), local('iAWriterDuoS-BoldItalic'), url('iAWriterDuoS-BoldItalic.woff2') format('woff2');
 }
 
-/* Standard Notes derives the interface font and the editor font from this
-   one variable (--sn-stylekit-editor-font-family defaults to it). */
-:root {
-  --sn-stylekit-sans-serif-font: 'iA Writer Duo S', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-    'Helvetica Neue', var(--sn-stylekit-simplified-chinese-font), sans-serif;
+/* The app wraps the note body (Super and plain editors) in .font-editor.
+   Titles, lists, tags and menus live outside it and keep the system font.
+   Size and line height are fixed here so every device matches without
+   per-device settings; while this theme is on, the app's own editor font
+   size and line height preferences are overridden. */
+.font-editor {
+  --font-size: 1.125rem !important;
+  --line-height: 1.6 !important;
+  font-family: 'iA Writer Duo S', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue',
+    sans-serif;
+  font-size: 1.125rem !important;
+  line-height: 1.6 !important;
 }
-
-/* The app's own stylesheet hard-codes the system font on html/body, and
-   buttons, inputs and menus inherit from there; a few places use the
-   Tailwind font-sans utility. Point them all at the same variable.
-   Code blocks, inline code and the monospace option are untouched. */
-html,
-body,
-.sn-component,
-.font-sans,
-button,
-input,
-textarea,
-select {
-  font-family: var(--sn-stylekit-sans-serif-font);
+.font-editor textarea,
+.font-editor [contenteditable] {
+  font-size: 1.125rem !important;
+  line-height: 1.6 !important;
 }
