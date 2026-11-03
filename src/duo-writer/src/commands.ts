@@ -122,3 +122,142 @@ export function toggleChecklist(view: EditorView) {
     return {from: from + indent, to: from + indent, insert: '- [ ] '};
   });
 }
+
+// ---- 0.3.0 additions -------------------------------------------------------
+
+const QUOTE = /^(\s*)> ?/;
+const NUMBER = /^(\s*)\d+\. /;
+const INLINE_MARKS = /(\*\*|__|\*|_|~~|`)/g;
+
+/** Quote on or off for every selected line. */
+export function toggleQuote(view: EditorView) {
+  return forEachSelectedLine(view, (text, from) => {
+    const q = QUOTE.exec(text);
+    if (q) return {from: from + q[1].length, to: from + q[0].length, insert: ''};
+    const indent = /^\s*/.exec(text)[0].length;
+    return {from: from + indent, to: from + indent, insert: '> '};
+  });
+}
+
+/** Numbered list on or off for the selected lines, numbered 1., 2., 3. in order. */
+export function toggleNumbered(view: EditorView) {
+  let n = 0;
+  return forEachSelectedLine(view, (text, from) => {
+    const num = NUMBER.exec(text);
+    if (num) return {from: from + num[1].length, to: from + num[0].length, insert: ''};
+    const check = CHECK.exec(text) || BULLET.exec(text);
+    n += 1;
+    if (check) return {from: from + check[1].length, to: from + check[0].length, insert: `${n}. `};
+    const indent = /^\s*/.exec(text)[0].length;
+    return {from: from + indent, to: from + indent, insert: `${n}. `};
+  });
+}
+
+/** Wrap the selection as a link: [text](url) with the cursor inside the parens. */
+export function insertLink(view: EditorView) {
+  const {state} = view;
+  const r = state.selection.main;
+  const text = state.sliceDoc(r.from, r.to);
+  const insert = `[${text}]()`;
+  view.dispatch({
+    changes: {from: r.from, to: r.to, insert},
+    selection: EditorSelection.cursor(r.from + insert.length - 1),
+    scrollIntoView: true
+  });
+  view.focus();
+  return true;
+}
+
+/** Fence the selected lines as a code block (or unfence if already fenced). */
+export function toggleCodeBlock(view: EditorView) {
+  const {state} = view;
+  const r = state.selection.main;
+  const first = state.doc.lineAt(r.from);
+  const last = state.doc.lineAt(r.to);
+  const prev = first.number > 1 ? state.doc.line(first.number - 1) : null;
+  const next = last.number < state.doc.lines ? state.doc.line(last.number + 1) : null;
+  if (prev && next && /^```/.test(prev.text) && /^```\s*$/.test(next.text)) {
+    view.dispatch({changes: [
+      {from: prev.from, to: first.from, insert: ''},
+      {from: last.to, to: next.to, insert: ''}
+    ]});
+  } else {
+    view.dispatch({
+      changes: [
+        {from: first.from, insert: '```\n'},
+        {from: last.to, insert: '\n```'}
+      ],
+      selection: EditorSelection.cursor(first.from + 3)
+    });
+  }
+  view.focus();
+  return true;
+}
+
+/** Insert an empty table on its own lines after the current line. */
+export function insertTable(view: EditorView) {
+  const {state} = view;
+  const line = state.doc.lineAt(state.selection.main.to);
+  const table = '\n| Column 1 | Column 2 |\n| --- | --- |\n|  |  |\n';
+  const prefix = line.text.length ? '\n' : '';
+  const firstCell = table.indexOf('|  |') + 2; // cursor lands in the first empty cell
+  view.dispatch({
+    changes: {from: line.to, insert: prefix + table},
+    selection: EditorSelection.cursor(line.to + prefix.length + firstCell),
+    scrollIntoView: true
+  });
+  view.focus();
+  return true;
+}
+
+/** Insert a divider line after the current line. */
+export function insertDivider(view: EditorView) {
+  const {state} = view;
+  const line = state.doc.lineAt(state.selection.main.to);
+  const prefix = line.text.length ? '\n' : '';
+  const insert = prefix + '\n---\n';
+  view.dispatch({
+    changes: {from: line.to, insert},
+    selection: EditorSelection.cursor(line.to + insert.length),
+    scrollIntoView: true
+  });
+  view.focus();
+  return true;
+}
+
+/** Strip inline marks from the selection and block prefixes from its lines. */
+export function clearFormatting(view: EditorView) {
+  const {state} = view;
+  const r = state.selection.main;
+  const first = state.doc.lineAt(r.from);
+  const last = state.doc.lineAt(r.to);
+  const from = r.empty ? first.from : r.from;
+  const to = r.empty ? last.to : r.to;
+  const text = state.sliceDoc(from, to);
+  const cleaned = text
+    .split('\n')
+    .map(l => l.replace(HEADING, '').replace(CHECK, '$1').replace(BULLET, '$1').replace(NUMBER, '$1').replace(QUOTE, '$1'))
+    .join('\n')
+    .replace(INLINE_MARKS, '');
+  if (cleaned === text) return true;
+  view.dispatch({changes: {from, to, insert: cleaned}, selection: EditorSelection.range(from, from + cleaned.length)});
+  view.focus();
+  return true;
+}
+
+/** Headings in the note, for the table of contents. */
+export function headings(state: EditorState): {level: number; text: string; pos: number}[] {
+  const out = [];
+  for (let n = 1; n <= state.doc.lines; n++) {
+    const line = state.doc.line(n);
+    const m = HEADING.exec(line.text);
+    if (m) out.push({level: m[1].length, text: line.text.slice(m[0].length).trim(), pos: line.from});
+  }
+  return out;
+}
+
+/** Jump to a position (used by the table of contents). */
+export function jumpTo(view: EditorView, pos: number) {
+  view.dispatch({selection: EditorSelection.cursor(pos), effects: EditorView.scrollIntoView(pos, {y: 'start', yMargin: 24})});
+  view.focus();
+}

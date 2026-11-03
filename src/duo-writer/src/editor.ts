@@ -1,16 +1,17 @@
-// The writing surface: CodeMirror 6 with Markdown parsing.
-// Styling is kept to the minimum until step 2: headings larger, bold and
-// italic drawn, everything else plain Duo S.
+// The writing surface: CodeMirror 6 with Markdown parsing, iA-style
+// in-place styling (headings, emphasis, links, code, quotes) with the marks
+// in light grey, or hidden off the current line when "hide marks" is on.
 import {EditorState, Compartment} from '@codemirror/state';
 import {EditorView, keymap, drawSelection} from '@codemirror/view';
-import {defaultKeymap, history, historyKeymap} from '@codemirror/commands';
+import {defaultKeymap, history, historyKeymap, undo, redo} from '@codemirror/commands';
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
 import {tags} from '@lezer/highlight';
-import {setHeading, toggleMark, toggleBullet, toggleChecklist} from './commands';
+import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock} from './commands';
 import {findExtension} from './find';
+import {marksExtension, setHideMarks} from './marks';
 
-const headingStyle = HighlightStyle.define([
+const duoStyle = HighlightStyle.define([
   {tag: tags.heading1, fontSize: '1.6em', fontWeight: 'bold'},
   {tag: tags.heading2, fontSize: '1.3em', fontWeight: 'bold'},
   {tag: tags.heading3, fontSize: '1.1em', fontWeight: 'bold'},
@@ -18,7 +19,16 @@ const headingStyle = HighlightStyle.define([
   {tag: tags.heading5, fontWeight: 'bold'},
   {tag: tags.heading6, fontWeight: 'bold'},
   {tag: tags.strong, fontWeight: 'bold'},
-  {tag: tags.emphasis, fontStyle: 'italic'}
+  {tag: tags.emphasis, fontStyle: 'italic'},
+  {tag: tags.strikethrough, textDecoration: 'line-through'},
+  {tag: tags.processingInstruction, class: 'dw-mark'},   // #, *, **, ~~, `, [, ], (, ), >
+  {tag: tags.list, class: 'dw-listmark'},                // list bullets and numbers
+  {tag: tags.atom, class: 'dw-mark'},                    // task markers [ ] [x]
+  {tag: tags.link, class: 'dw-link'},
+  {tag: tags.url, class: 'dw-url'},
+  {tag: tags.monospace, class: 'dw-code'},
+  {tag: tags.quote, class: 'dw-quote'},
+  {tag: tags.contentSeparator, class: 'dw-rule'}
 ]);
 
 export interface EditorHooks {
@@ -26,6 +36,7 @@ export interface EditorHooks {
   onSelectionChange?: () => void;
   onFind?: () => void;        // Cmd+F: focus the find field
   onToggleTools?: () => void; // Cmd+.: show or hide the tools row
+  onToggleMarks?: () => void; // Cmd+Shift+.: show or hide the marks
 }
 
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
@@ -35,14 +46,24 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   const toolKeymap = keymap.of([
     {key: 'Mod-b', run: toggleMark('**')},
     {key: 'Mod-i', run: toggleMark('*')},
+    {key: 'Mod-Shift-x', run: toggleMark('~~')},
+    {key: 'Mod-e', run: toggleMark('`')},
+    {key: 'Mod-k', run: insertLink},
     {key: 'Mod-0', run: setHeading(0)},
     {key: 'Mod-1', run: setHeading(1)},
     {key: 'Mod-2', run: setHeading(2)},
     {key: 'Mod-3', run: setHeading(3)},
+    {key: 'Mod-4', run: setHeading(4)},
+    {key: 'Mod-5', run: setHeading(5)},
+    {key: 'Mod-6', run: setHeading(6)},
     {key: 'Mod-Shift-8', run: toggleBullet},
+    {key: 'Mod-Shift-7', run: toggleNumbered},
     {key: 'Mod-Shift-9', run: toggleChecklist},
+    {key: "Mod-'", run: toggleQuote},
+    {key: 'Mod-Shift-c', run: toggleCodeBlock},
     {key: 'Mod-f', run: () => { hooks.onFind?.(); return true; }},
-    {key: 'Mod-.', run: () => { hooks.onToggleTools?.(); return true; }}
+    {key: 'Mod-.', run: () => { hooks.onToggleTools?.(); return true; }},
+    {key: 'Mod-Shift-.', run: () => { hooks.onToggleMarks?.(); return true; }}
   ]);
 
   const state = EditorState.create({
@@ -52,8 +73,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       drawSelection(),
       EditorView.lineWrapping,
       markdown({base: markdownLanguage}),
-      syntaxHighlighting(headingStyle),
+      syntaxHighlighting(duoStyle),
       findExtension,
+      marksExtension,
       toolKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       editable.of(EditorView.editable.of(true)),
@@ -67,9 +89,12 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   });
 
   const view = new EditorView({state, parent});
+  (window as any).__dw = view; // diagnostics on the demo page
 
   return {
     view,
+    undo: () => { undo(view); view.focus(); return true; },
+    redo: () => { redo(view); view.focus(); return true; },
     setText(text: string) {
       const current = view.state.doc.toString();
       if (current === text) return;
@@ -79,6 +104,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     },
     setLocked(locked: boolean) {
       view.dispatch({effects: editable.reconfigure(EditorView.editable.of(!locked))});
+    },
+    setHideMarks(hide: boolean) {
+      view.dispatch({effects: setHideMarks.of(hide)});
     }
   };
 }

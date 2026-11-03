@@ -44,82 +44,169 @@ html, body {
   height: 100%;
 }
 
-/* Layout: optional tools row on top, writing surface fills the rest. */
+/* ---- Layout: tools row on top, writing surface fills the rest -------------
+   Numbers: 8-pt grid; Mac controls 32 tall with 4 between; on touch screens
+   (no hover) 44 tall with 8 between (the vault design reference's floor). */
 .dw-app {
   position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
+  --dw-muted: var(--sn-stylekit-neutral-color, #6b6b6b);   /* 5.7:1 on white */
+  --dw-mark: #8c8c8c;                                       /* 3.4:1 on white: grey marks */
+  --dw-border: var(--sn-stylekit-border-color, #e4e4e4);
+  --dw-fg: var(--sn-stylekit-foreground-color, #1a1a1a);
+  --dw-bg: var(--sn-stylekit-background-color, #fff);
+  --dw-btn: 32px;
+  --dw-gap: 4px;
+}
+@media (hover: none) {
+  .dw-app { --dw-btn: 44px; --dw-gap: 8px; }
 }
 
-.dw-host {
-  flex: 1 1 auto;
-  min-height: 0;
-}
+.dw-host { flex: 1 1 auto; min-height: 0; }
 
 .dw-toggle {
   position: absolute;
-  top: 6px;
-  right: 10px;
-  z-index: 2;
-  width: 28px;
-  height: 28px;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  width: var(--dw-btn);
+  height: var(--dw-btn);
   padding: 0;
   border: 0;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--sn-stylekit-neutral-color, #9a9a9a);
-  font: inherit;
-  font-size: 18px;
-  line-height: 28px;
-  opacity: 0.55;
+  border-radius: 8px;
+  background: var(--dw-bg);
+  color: var(--dw-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
   cursor: pointer;
 }
 .dw-toggle:hover { opacity: 1; }
 
 .dw-toolbar {
   flex: 0 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 44px 6px 12px;
-  border-bottom: 1px solid var(--sn-stylekit-border-color, #e6e6e6);
-  color: var(--sn-stylekit-neutral-color, #777);
+  border-bottom: 1px solid var(--dw-border);
+  color: var(--dw-muted);
   font-size: 14px;
   line-height: 1.4;
+  padding-right: calc(var(--dw-btn) + 16px); /* room for the toggle */
 }
+.dw-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--dw-gap);
+  padding: 8px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dw-tools::-webkit-scrollbar { display: none; }
 
-.dw-btn, .dw-select {
+.dw-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dw-btn);
+  height: var(--dw-btn);
+  padding: 0;
   font: inherit;
   color: inherit;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 3px 8px;
-  min-width: 32px;
-  min-height: 30px;
+  border-radius: 8px;
   cursor: pointer;
 }
-.dw-btn:hover, .dw-select:hover { border-color: var(--sn-stylekit-border-color, #ddd); }
-.dw-btn.dw-active { color: var(--sn-stylekit-foreground-color, #1a1a1a); }
-.dw-select { padding-right: 4px; }
+.dw-btn:hover { border-color: var(--dw-border); color: var(--dw-fg); }
+.dw-btn.dw-active { color: var(--dw-fg); background: var(--sn-stylekit-contrast-background-color, #f2f2f2); }
 
-.dw-find { display: inline-flex; align-items: center; gap: 4px; }
-.dw-find-input {
+.dw-sep { flex: 0 0 auto; width: 1px; height: 20px; background: var(--dw-border); margin: 0 4px; }
+
+.dw-selectwrap { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; }
+.dw-select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: var(--dw-btn);
+  padding: 0 26px 0 10px;
   font: inherit;
-  color: var(--sn-stylekit-foreground-color, #1a1a1a);
-  background: var(--sn-stylekit-background-color, #fff);
-  border: 1px solid var(--sn-stylekit-border-color, #ddd);
-  border-radius: 6px;
-  padding: 4px 8px;
-  width: 11em;
-  max-width: 40vw;
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
 }
-.dw-count { min-width: 2em; text-align: center; font-size: 12px; }
+.dw-select:hover { border-color: var(--dw-border); color: var(--dw-fg); }
+.dw-chev { position: absolute; right: 8px; pointer-events: none; display: inline-flex; }
 
+.dw-toolbar { position: relative; }
+.dw-toc {
+  position: absolute;
+  top: calc(var(--dw-btn) + 12px);
+  left: 8px;
+  z-index: 4;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 50vh;
+  overflow: auto;
+  background: var(--dw-bg);
+  border: 1px solid var(--dw-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 4px;
+}
+.dw-toc-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--dw-fg);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dw-toc-item:hover { background: var(--sn-stylekit-contrast-background-color, #f2f2f2); }
+.dw-toc-l2 { padding-left: 22px; }
+.dw-toc-l3 { padding-left: 34px; }
+.dw-toc-l4, .dw-toc-l5, .dw-toc-l6 { padding-left: 46px; }
+.dw-toc-empty { padding: 8px 10px; color: var(--dw-muted); }
+
+.dw-find {
+  display: flex;
+  align-items: center;
+  gap: var(--dw-gap);
+  padding: 0 8px 8px 8px;
+}
+.dw-find-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 24em;
+  height: var(--dw-btn);
+  font: inherit;
+  color: var(--dw-fg);
+  background: var(--dw-bg);
+  border: 1px solid var(--dw-border);
+  border-radius: 8px;
+  padding: 0 10px;
+}
+.dw-count { min-width: 2em; text-align: center; font-size: 13px; }
+
+/* ---- In-place Markdown styling ------------------------------------------- */
 .dw-match { background-color: rgba(255, 200, 0, 0.35); border-radius: 2px; }
+.dw-mark { color: var(--dw-mark); font-weight: normal; font-style: normal; text-decoration: none; }
+.dw-listmark { color: var(--dw-mark); }
+.dw-link { color: var(--dw-fg); text-decoration: underline; text-decoration-color: var(--dw-mark); text-underline-offset: 3px; }
+.dw-url { color: var(--dw-mark); }
+.dw-code { font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace; background: var(--sn-stylekit-contrast-background-color, #f2f2f2); border-radius: 3px; }
+.dw-quote { color: var(--dw-muted); font-style: italic; }
+.dw-rule { color: var(--dw-mark); }
 
 .cm-editor {
   height: 100%;

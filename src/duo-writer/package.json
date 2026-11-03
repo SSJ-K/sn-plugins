@@ -1,6 +1,6 @@
 {
   "name": "duo-writer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Duo Writer: an iA Writer style Markdown editor plugin for Standard Notes",
   "scripts": {
