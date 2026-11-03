@@ -2,7 +2,7 @@
 // Step 1 keeps styling to the minimum needed for the scroll gate test:
 // headings drawn larger, everything else plain Duo S.
 import {EditorState, Compartment} from '@codemirror/state';
-import {EditorView, keymap, drawSelection, highlightActiveLine} from '@codemirror/view';
+import {EditorView, keymap, drawSelection} from '@codemirror/view';
 import {defaultKeymap, history, historyKeymap} from '@codemirror/commands';
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
@@ -28,7 +28,6 @@ export function createEditor(parent: HTMLElement, initialText: string, onChange:
     extensions: [
       history(),
       drawSelection(),
-      highlightActiveLine(),
       EditorView.lineWrapping,
       markdown({base: markdownLanguage}),
       syntaxHighlighting(headingStyle),

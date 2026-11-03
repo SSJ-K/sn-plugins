@@ -56,28 +56,30 @@ html, body {
   outline: none;
 }
 
-.cm-scroller {
+/* Selectors carry .cm-editor so they outrank CodeMirror's injected base theme. */
+.cm-editor .cm-scroller {
   font-family: inherit;
-  line-height: inherit;
+  line-height: 1.6;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  justify-content: center;
 }
 
-.cm-content {
+.cm-editor .cm-content {
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 100%;
   max-width: 38em;
-  margin: 0 auto;
+  box-sizing: border-box;
+  margin: 0;
   padding: 32px 16px 50vh 16px;
   caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
 }
 
-.cm-line {
+.cm-editor .cm-line {
   padding: 0;
 }
 
-.cm-activeLine {
-  background-color: transparent;
-}
-
-.cm-cursor {
+.cm-editor .cm-cursor {
   border-left-width: 2px;
 }
