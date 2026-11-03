@@ -229,7 +229,7 @@ html, body {
   flex-grow: 0;
   flex-shrink: 1;
   width: 100%;
-  max-width: 41.4em; /* 36 em of text (60 characters) plus 2.7 em each side, as in iA Writer */
+  max-width: 43.8em; /* 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
   box-sizing: border-box;
   margin: 0;
   padding: 32px 2.7em 50vh 2.7em; /* measured in iA Writer: 130 px margin at 48.2 px text */
