@@ -61,12 +61,19 @@ const App = () => {
 
   return (
     <div className={'dw-app' + (toolsOpen ? ' dw-tools-open' : '')}>
-      <button type="button" className="dw-toggle" title={toolsOpen ? 'Hide tools (Cmd+.)' : 'Show tools (Cmd+.)'}
-              aria-label="Show or hide tools" onMouseDown={(e) => e.preventDefault()} onClick={toggleTools}><I.tools/></button>
+      <div className="dw-corner">
+        <button type="button" className={'dw-btn' + (hideMarks ? ' dw-active' : '')}
+                title={hideMarks ? 'Show Markdown marks (Cmd+Shift+.)' : 'Hide Markdown marks off the current line (Cmd+Shift+.)'}
+                aria-label="Show or hide Markdown marks" onMouseDown={(e) => e.preventDefault()} onClick={toggleMarks}>
+          {hideMarks ? <I.eyeOff/> : <I.eye/>}
+        </button>
+        <button type="button" className={'dw-btn' + (toolsOpen ? ' dw-active' : '')}
+                title={toolsOpen ? 'Hide tools (Cmd+.)' : 'Show tools (Cmd+.)'}
+                aria-label="Show or hide tools" onMouseDown={(e) => e.preventDefault()} onClick={toggleTools}><I.tools/></button>
+      </div>
       {ready && toolsOpen && (
         <Toolbar view={editorRef.current.view} undo={editorRef.current.undo} redo={editorRef.current.redo}
-                 selectionTick={selectionTick} findFocusTick={findFocusTick}
-                 hideMarks={hideMarks} onToggleMarks={toggleMarks}/>
+                 selectionTick={selectionTick} findFocusTick={findFocusTick}/>
       )}
       <div className="dw-host" ref={host}/>
     </div>

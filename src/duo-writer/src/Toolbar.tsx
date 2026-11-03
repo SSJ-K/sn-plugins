@@ -16,11 +16,9 @@ interface Props {
   redo: () => boolean;
   selectionTick: number;      // bumps on every selection change, to refresh the heading picker
   findFocusTick: number;      // bumps when Cmd+F is pressed
-  hideMarks: boolean;
-  onToggleMarks: () => void;
 }
 
-const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, hideMarks, onToggleMarks}: Props) => {
+const Toolbar = ({view, undo, redo, selectionTick, findFocusTick}: Props) => {
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [count, setCount] = useState(0);
@@ -67,8 +65,9 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, hideMarks, onT
         {btn(I.undo, 'Undo (Cmd+Z)', undo)}
         {btn(I.redo, 'Redo (Cmd+Shift+Z)', redo)}
         {sep()}
-        <span className="dw-selectwrap">
-          <select className="dw-select" value={level} title="Text style (Cmd+0 to Cmd+6)" aria-label="Text style"
+        <span className="dw-selectwrap" title="Text style (Cmd+0 to Cmd+6)">
+          <span className="dw-sellabel" aria-hidden="true">{level ? 'H' + level : '¶'}</span>
+          <select className="dw-select" value={level} aria-label="Text style"
                   onMouseDown={(e) => e.stopPropagation()}
                   onChange={(e) => setHeading(Number((e.target as HTMLSelectElement).value))(view)}>
             <option value={0}>Body</option>
@@ -101,7 +100,6 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, hideMarks, onT
         {btn(I.clear, 'Clear formatting', () => clearFormatting(view))}
         {sep()}
         {btn(I.search, 'Find in note (Cmd+F)', () => { setFindOpen(true); findInput.current?.focus(); }, findOpen)}
-        {btn(hideMarks ? I.eyeOff : I.eye, hideMarks ? 'Show Markdown marks (Cmd+Shift+.)' : 'Hide Markdown marks off the current line (Cmd+Shift+.)', onToggleMarks, hideMarks)}
       </div>
       {tocOpen && (
         <div className="dw-toc" onMouseDown={keep}>

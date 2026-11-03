@@ -67,25 +67,17 @@ html, body {
 
 .dw-host { flex: 1 1 auto; min-height: 0; }
 
-.dw-toggle {
+.dw-corner {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 3;
-  width: var(--dw-btn);
-  height: var(--dw-btn);
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
+  display: flex;
+  gap: var(--dw-gap);
+  padding-left: 8px;
   background: var(--dw-bg);
   color: var(--dw-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-  cursor: pointer;
 }
-.dw-toggle:hover { opacity: 1; }
 
 .dw-toolbar {
   flex: 0 0 auto;
@@ -93,7 +85,7 @@ html, body {
   color: var(--dw-muted);
   font-size: 14px;
   line-height: 1.4;
-  padding-right: calc(var(--dw-btn) + 16px); /* room for the toggle */
+  padding-right: calc(2 * var(--dw-btn) + var(--dw-gap) + 24px); /* room for the corner buttons */
 }
 .dw-tools {
   display: flex;
@@ -125,21 +117,19 @@ html, body {
 
 .dw-sep { flex: 0 0 auto; width: 1px; height: 20px; background: var(--dw-border); margin: 0 4px; }
 
-.dw-selectwrap { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; }
+.dw-selectwrap { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: calc(var(--dw-btn) + 12px); height: var(--dw-btn); border: 1px solid transparent; border-radius: 8px; }
+.dw-selectwrap:hover { border-color: var(--dw-border); color: var(--dw-fg); }
+.dw-sellabel { font-size: 14px; font-weight: bold; pointer-events: none; }
 .dw-select {
-  appearance: none;
-  -webkit-appearance: none;
-  height: var(--dw-btn);
-  padding: 0 26px 0 10px;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
   cursor: pointer;
 }
-.dw-select:hover { border-color: var(--dw-border); color: var(--dw-fg); }
-.dw-chev { position: absolute; right: 8px; pointer-events: none; display: inline-flex; }
+.dw-chev { position: absolute; right: 2px; pointer-events: none; display: inline-flex; }
 
 .dw-toolbar { position: relative; }
 .dw-toc {
