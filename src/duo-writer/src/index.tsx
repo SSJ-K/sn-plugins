@@ -104,12 +104,6 @@ const App = () => {
     editorRef.current = editor;
     setReady(true);
     if (snApi.extensionMeta?.previewNotes?.[noteId()] === true) setPreviewMode(true, false);
-    // TEMPORARY (0.8.6): a plain text box for the iPad freeze test (does the iPad give the keyboard to an
-    // ordinary text box in this window when the editor gets none?). Not saved anywhere; remove with the fix.
-    const testBox = document.createElement('textarea');
-    testBox.placeholder = 'test box';
-    testBox.style.cssText = 'position:fixed;left:8px;bottom:8px;width:180px;height:36px;z-index:10;box-sizing:border-box;padding:6px;font:16px -apple-system,system-ui,sans-serif;color:#111;background:#fff;border:1px solid #bbb;border-radius:6px;resize:none';
-    document.body.appendChild(testBox);
     const unsubscribe = snApi.subscribe(() => {
       editor.setText(snApi.text ?? '');
       editor.setLocked(!!snApi.locked);
