@@ -246,7 +246,7 @@ html, body {
 .cm-editor {
   height: 100%;
   font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
-  font-size: calc(14.5px * var(--dw-scale, 1)); /* --dw-scale: the user's size steps, 1.1 per step */
+  font-size: calc(15px * var(--dw-scale, 1)); /* --dw-scale: the user's size steps, 1.1 per step; 15 px lands on iA's 14.6 pt in a split pane */
   line-height: 1.6;
   background-color: transparent;
 }
@@ -255,6 +255,7 @@ html, body {
 }
 @media (min-width: 900px) {
   .cm-editor { font-size: calc(18px * var(--dw-scale, 1)); }
+  .cm-editor .cm-content { max-width: 43.8em; } /* Mac: 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
 }
 
 .cm-editor.cm-focused {
@@ -274,7 +275,7 @@ html, body {
   flex-grow: 0;
   flex-shrink: 1;
   width: 100%;
-  max-width: 43.8em; /* 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
+  max-width: 35.4em; /* phone: 30 em of text (50 characters, iA's effective width on the phone) plus 2.7 em each side */
   box-sizing: border-box;
   margin: 0;
   padding: 3.3em 2.7em 50vh 2.7em; /* iA Writer: 130 px side margin, 4.3 em from chrome to first ink */
