@@ -9,7 +9,9 @@ import {hideMarksField, linesWithCursor, setHideMarks} from './marks';
 const band = Decoration.mark({class: 'dw-hl'});
 const markDeco = Decoration.mark({class: 'dw-mark dw-hlmark'});
 const hiddenMark = Decoration.replace({});
-const RE = /==([^=\n]+?)==/g;
+// Same rule as the preview (markdown-it-mark): no space just inside the marks, = allowed inside,
+// and a " ==" inside opens a new highlight rather than closing this one.
+const RE = /==(?=\S)((?:(?!\s==)[^\n])*?\S)==/g;
 
 // == inside inline code or a code block is code, not a highlight (preview agrees).
 function inCode(state: EditorState, pos: number): boolean {
@@ -41,6 +43,12 @@ function build(view: EditorView): DecorationSet {
   items.sort((a, c) => a.from - c.from);
   for (const it of items) b.add(it.from, it.to, it.d);
   return b.finish();
+}
+
+// Self-check against highlights the preview draws (runs once at load, console only).
+if (typeof console !== 'undefined') {
+  const cases: [string, string][] = [['==a = b==', 'a = b'], ['== spaced ==', ''], ['==a ==b==', 'b'], ['x == y == z', ''], ['a ==b== c ==d==', 'b|d']];
+  for (const [s, want] of cases) { const got = [...s.matchAll(RE)].map(m => m[1]).join('|'); if (got !== want) console.error('highlight self-check failed', s, got, want); }
 }
 
 export const highlightExtension = ViewPlugin.fromClass(class {
