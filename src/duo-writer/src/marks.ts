@@ -90,6 +90,11 @@ export const marksExtension = [hideMarksField, hider];
 const LINE_START = /^(\s*)(#{1,6} |[-*+] (?:\[[ xX]\] )?|\d+\. |> )/;
 const doneMark = Decoration.mark({class: 'dw-done'});
 const taskMark = Decoration.mark({class: 'dw-task'});
+const hashMark = Decoration.mark({class: 'dw-hashmark'});
+const strongMark = Decoration.mark({class: 'dw-strongmark'});
+const linkMark = Decoration.mark({class: 'dw-linkmark'});
+const listMark = Decoration.mark({class: 'dw-listmark'});
+const quoteMark = Decoration.mark({class: 'dw-quotemark'});
 
 function layout(view: EditorView): DecorationSet {
   const {state} = view;
@@ -126,6 +131,12 @@ function layout(view: EditorView): DecorationSet {
     from: view.visibleRanges[0]?.from ?? 0,
     to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
     enter(node) {
+      // Mark kinds that iA draws differently from the generic grey.
+      if (node.name === 'HeaderMark') { items.push({from: node.from, to: node.to, deco: hashMark}); return; }
+      if (node.name === 'EmphasisMark' && node.to - node.from >= 2) { items.push({from: node.from, to: node.to, deco: strongMark}); return; }
+      if (node.name === 'LinkMark') { items.push({from: node.from, to: node.to, deco: linkMark}); return; }
+      if (node.name === 'ListMark') { items.push({from: node.from, to: node.to, deco: listMark}); return; }
+      if (node.name === 'QuoteMark') { items.push({from: node.from, to: node.to, deco: quoteMark}); return; }
       if (node.name !== 'Task') return;
       const marker = node.node.getChild('TaskMarker');
       if (!marker) return;

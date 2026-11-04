@@ -1,35 +1,38 @@
-// Thin line icons, 20 x 20, stroke 1.6, drawn here so nothing external loads.
+// Icons from Lucide (https://lucide.dev), ISC licence, v0.468.0; see LICENSE-lucide.txt.
+// Rendered at 20 px with a 1.75 stroke so they match Standard Notes' own toolbar weight.
 import React from 'react';
 
-const base = {width: 20, height: 20, viewBox: '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true};
+const base = {width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true};
+
+const svg = (inner: string) => () => <svg {...base} dangerouslySetInnerHTML={{__html: inner}}/>;
 
 export const I = {
-  undo: () => <svg {...base}><path d="M7 5 3.5 8.5 7 12"/><path d="M4 8.5h8a4 4 0 0 1 0 8H9"/></svg>,
-  redo: () => <svg {...base}><path d="m13 5 3.5 3.5L13 12"/><path d="M16 8.5H8a4 4 0 0 0 0 8h3"/></svg>,
-  bold: () => <svg {...base}><path d="M6 4h5.5a3 3 0 0 1 0 6H6zM6 10h6.5a3 3 0 0 1 0 6H6z"/></svg>,
-  italic: () => <svg {...base}><path d="M11 4h5M4 16h5M12.5 4l-5 12"/></svg>,
-  strike: () => <svg {...base}><path d="M4 10h12"/><path d="M14 6.5c-.5-1.5-2-2.5-4-2.5-2.5 0-4 1.3-4 3 0 1 .5 1.7 1.5 2.2M6 13.5c.5 1.5 2 2.5 4 2.5 2.5 0 4-1.3 4-3 0-.6-.2-1.1-.5-1.5"/></svg>,
-  link: () => <svg {...base}><path d="M8.5 11.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M11.5 8.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5l1-1"/></svg>,
-  code: () => <svg {...base}><path d="m7 6-4 4 4 4M13 6l4 4-4 4"/></svg>,
-  codeBlock: () => <svg {...base}><rect x="3" y="4" width="14" height="12" rx="2"/><path d="m8 8-2 2 2 2M12 8l2 2-2 2"/></svg>,
-  quote: () => <svg {...base}><path d="M5 5v10"/><path d="M9 7h7M9 10h7M9 13h5"/></svg>,
-  bullets: () => <svg {...base}><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="5" cy="10" r="1" fill="currentColor"/><circle cx="5" cy="14" r="1" fill="currentColor"/><path d="M9 6h8M9 10h8M9 14h8"/></svg>,
-  numbers: () => <svg {...base}><path d="M4 5h1.5v3M4 8h3M4 12h3l-3 3h3" /><path d="M9.5 6h7.5M9.5 10h7.5M9.5 14h7.5"/></svg>,
-  checks: () => <svg {...base}><rect x="3" y="4" width="5" height="5" rx="1"/><path d="m4.3 6.6 1.2 1.2 2.2-2.4"/><rect x="3" y="11" width="5" height="5" rx="1"/><path d="M11 6.5h6M11 13.5h6"/></svg>,
-  table: () => <svg {...base}><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M3 8.5h14M3 12.5h14M9 4v12"/></svg>,
-  divider: () => <svg {...base}><path d="M3 10h14"/><path d="M6 5h8M6 15h8" opacity=".45"/></svg>,
-  toc: () => <svg {...base}><path d="M4 5h12M4 9h8M4 13h10M4 17h6"/></svg>,
-  clear: () => <svg {...base}><path d="m5 13 5-8h4l-5 8z"/><path d="M4 16h12"/><path d="M9 13H5"/></svg>,
-  search: () => <svg {...base}><circle cx="9" cy="9" r="5"/><path d="m13 13 4 4"/></svg>,
-  eye: () => <svg {...base}><path d="M2.5 10s3-5 7.5-5 7.5 5 7.5 5-3 5-7.5 5-7.5-5-7.5-5z"/><circle cx="10" cy="10" r="2.2"/></svg>,
-  eyeOff: () => <svg {...base}><path d="M2.5 10s3-5 7.5-5c1.3 0 2.5.4 3.5 1M17.5 10s-3 5-7.5 5c-1.3 0-2.5-.4-3.5-1"/><path d="m4 16 12-12"/></svg>,
-  chevron: () => <svg {...base} width={14} height={14}><path d="m6 8 4 4 4-4"/></svg>,
-  close: () => <svg {...base}><path d="m6 6 8 8M14 6l-8 8"/></svg>,
-  prev: () => <svg {...base}><path d="m12 5-5 5 5 5"/></svg>,
-  next: () => <svg {...base}><path d="m8 5 5 5-5 5"/></svg>,
-  tools: () => <svg {...base}><path d="M4 6h12M4 10h12M4 14h12"/></svg>,
-  textBigger: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><path d="M15.5 4v6M12.5 7h6"/></svg>,
-  textSmaller: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><path d="M12.5 7h6"/></svg>,
-  textReset: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><circle cx="15.5" cy="7" r="2.6"/></svg>,
-  more: () => <svg {...base}><circle cx="5" cy="10" r="1.3" fill="currentColor"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>
+  undo: svg('<svg class="lucide lucide-undo-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M9 14 4 9l5-5" /> <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />'),
+  redo: svg('<svg class="lucide lucide-redo-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 14 5-5-5-5" /> <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />'),
+  bold: svg('<svg class="lucide lucide-bold" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" />'),
+  italic: svg('<svg class="lucide lucide-italic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <line x1="19" x2="10" y1="4" y2="4" /> <line x1="14" x2="5" y1="20" y2="20" /> <line x1="15" x2="9" y1="4" y2="20" />'),
+  strike: svg('<svg class="lucide lucide-strikethrough" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 4H9a3 3 0 0 0-2.83 4" /> <path d="M14 12a4 4 0 0 1 0 8H6" /> <line x1="4" x2="20" y1="12" y2="12" />'),
+  link: svg('<svg class="lucide lucide-link" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />'),
+  code: svg('<svg class="lucide lucide-code" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <polyline points="16 18 22 12 16 6" /> <polyline points="8 6 2 12 8 18" />'),
+  codeBlock: svg('<svg class="lucide lucide-square-code" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 9.5 8 12l2 2.5" /> <path d="m14 9.5 2 2.5-2 2.5" /> <rect width="18" height="18" x="3" y="3" rx="2" />'),
+  quote: svg('<svg class="lucide lucide-text-quote" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M17 6H3" /> <path d="M21 12H8" /> <path d="M21 18H8" /> <path d="M3 12v6" />'),
+  bullets: svg('<svg class="lucide lucide-list" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 12h.01" /> <path d="M3 18h.01" /> <path d="M3 6h.01" /> <path d="M8 12h13" /> <path d="M8 18h13" /> <path d="M8 6h13" />'),
+  numbers: svg('<svg class="lucide lucide-list-ordered" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 12h11" /> <path d="M10 18h11" /> <path d="M10 6h11" /> <path d="M4 10h2" /> <path d="M4 6h1v4" /> <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />'),
+  checks: svg('<svg class="lucide lucide-list-checks" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /> <path d="M13 6h8" /> <path d="M13 12h8" /> <path d="M13 18h8" />'),
+  table: svg('<svg class="lucide lucide-table" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v18" /> <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 9h18" /> <path d="M3 15h18" />'),
+  divider: svg('<svg class="lucide lucide-minus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 12h14" />'),
+  toc: svg('<svg class="lucide lucide-table-of-contents" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 12H3" /> <path d="M16 18H3" /> <path d="M16 6H3" /> <path d="M21 12h.01" /> <path d="M21 18h.01" /> <path d="M21 6h.01" />'),
+  clear: svg('<svg class="lucide lucide-remove-formatting" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 7V4h16v3" /> <path d="M5 20h6" /> <path d="M13 4 8 20" /> <path d="m15 15 5 5" /> <path d="m20 15-5 5" />'),
+  search: svg('<svg class="lucide lucide-search" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" />'),
+  eye: svg('<svg class="lucide lucide-eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" />'),
+  eyeOff: svg('<svg class="lucide lucide-eye-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" />'),
+  chevron: svg('<svg class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" />'),
+  close: svg('<svg class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" />'),
+  prev: svg('<svg class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" />'),
+  next: svg('<svg class="lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m9 18 6-6-6-6" />'),
+  tools: svg('<svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <line x1="4" x2="20" y1="12" y2="12" /> <line x1="4" x2="20" y1="6" y2="6" /> <line x1="4" x2="20" y1="18" y2="18" />'),
+  more: svg('<svg class="lucide lucide-ellipsis" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" />'),
+  textBigger: svg('<svg class="lucide lucide-a-arrow-up" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3.5 13h6" /> <path d="m2 16 4.5-9 4.5 9" /> <path d="M18 16V7" /> <path d="m14 11 4-4 4 4" />'),
+  textSmaller: svg('<svg class="lucide lucide-a-arrow-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3.5 13h6" /> <path d="m2 16 4.5-9 4.5 9" /> <path d="M18 7v9" /> <path d="m14 12 4 4 4-4" />'),
+  textReset: svg('<svg class="lucide lucide-a-large-small" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M21 14h-5" /> <path d="M16 16v-3.5a2.5 2.5 0 0 1 5 0V16" /> <path d="M4.5 13h6" /> <path d="m3 16 4.5-9 4.5 9" />'),
 };

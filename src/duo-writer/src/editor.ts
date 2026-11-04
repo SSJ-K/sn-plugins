@@ -23,12 +23,12 @@ const duoStyle = HighlightStyle.define([
   {tag: tags.emphasis, fontStyle: 'italic'},
   {tag: tags.strikethrough, textDecoration: 'line-through'},
   {tag: tags.processingInstruction, class: 'dw-mark'},   // #, *, **, ~~, `, [, ], (, ), >
-  {tag: tags.list, class: 'dw-listmark'},                // list bullets and numbers
   {tag: tags.atom, class: 'dw-mark'},                    // task markers [ ] [x]
   {tag: tags.link, class: 'dw-link'},
   {tag: tags.url, class: 'dw-url'},
   {tag: tags.monospace, class: 'dw-code'},
   {tag: tags.quote, class: 'dw-quote'},
+  {tag: tags.list, class: 'dw-list'},
   {tag: tags.contentSeparator, class: 'dw-rule'}
 ]);
 
