@@ -3,6 +3,7 @@
 // in light grey, or hidden off the current line when "hide marks" is on.
 import {EditorState, Compartment} from '@codemirror/state';
 import {EditorView, keymap, drawSelection} from '@codemirror/view';
+import {EditorSelection} from '@codemirror/state';
 import {defaultKeymap, history, historyKeymap, undo, redo} from '@codemirror/commands';
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
@@ -74,9 +75,23 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Alt--', run: () => { hooks.onSizeStep?.(-1); return true; }},
     {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }},
     {key: 'Mod-r', run: () => { hooks.onTogglePreview?.(); return true; }},
+    {key: 'Mod-Shift-h', run: toggleMark('==')},
     {key: 'Mod-Shift-w', run: insertCalendarWeek},
     {key: 'Mod-Shift-d', run: insertToday}
   ]);
+
+  // Obsidian-style: typing a mark character with text selected wraps the selection instead of replacing it.
+  const wrapOnType = EditorView.inputHandler.of((v, from, to, text) => {
+    if (!'*_=`~'.includes(text) || text.length !== 1) return false;
+    const sel = v.state.selection;
+    if (sel.ranges.every(r => r.empty)) return false;
+    const pair = (text === '=' || text === '~') ? text + text : text; // == and ~~ are the Markdown forms
+    v.dispatch(v.state.changeByRange(r => r.empty ? {range: r} : {
+      changes: [{from: r.from, insert: pair}, {from: r.to, insert: pair}],
+      range: EditorSelection.range(r.from + pair.length, r.to + pair.length)
+    }));
+    return true;
+  });
 
   const state = EditorState.create({
     doc: initialText,
@@ -86,6 +101,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       EditorView.lineWrapping,
       markdown({base: markdownLanguage}),
       syntaxHighlighting(duoStyle),
+      wrapOnType,
       findExtension,
       marksExtension,
       layoutExtension,

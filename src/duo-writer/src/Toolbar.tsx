@@ -72,11 +72,11 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   // Priority order: most used first. Everything after what fits goes under "more".
   const tools: Tool[] = [
     {key: 'toc', group: 0, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
-    {key: 'heading', group: 2, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
     {key: 'cw', group: 9, label: 'Insert calendar week', title: 'Insert calendar week, Sunday start (Cmd+Shift+W)', text: calendarWeek(), run: () => insertCalendarWeek(view)},
     {key: 'date', group: 9, label: 'Insert today', title: 'Insert today as MM/DD/YYYY (Cmd+Shift+D)', text: 'Date', run: () => insertToday(view)},
     {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
     {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
+    {key: 'highlight', group: 3, label: 'Highlight', title: 'Highlight (Cmd+Shift+H, or type = over a selection)', icon: I.highlight, run: () => toggleMark('==')(view)},
     {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
     {key: 'checks', group: 4, label: 'Checklist', title: 'Checklist (Cmd+Shift+9)', icon: I.checks, run: () => toggleChecklist(view)},
     {key: 'undo', group: 1, label: 'Undo', title: 'Undo (Cmd+Z)', icon: I.undo, run: undo},
@@ -93,6 +93,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
     {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)},
     {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+Option+=)', icon: I.textBigger, run: () => onSizeStep(1)},
     {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+Option+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
+    {key: 'heading', group: 10, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
     {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Option+0)', icon: I.textReset, run: () => onSizeStep(0)}
   ];
 
