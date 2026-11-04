@@ -38,6 +38,7 @@ export interface EditorHooks {
   onFind?: () => void;        // Cmd+F: focus the find field
   onToggleTools?: () => void; // Cmd+.: show or hide the tools row
   onToggleMarks?: () => void; // Cmd+Shift+.: show or hide the marks
+  onSizeStep?: (delta: number) => void; // Cmd+= bigger, Cmd+- smaller, 0 = reset (Cmd+Shift+0)
 }
 
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
@@ -64,7 +65,11 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Shift-c', run: toggleCodeBlock},
     {key: 'Mod-f', run: () => { hooks.onFind?.(); return true; }},
     {key: 'Mod-.', run: () => { hooks.onToggleTools?.(); return true; }},
-    {key: 'Mod-Shift-.', run: () => { hooks.onToggleMarks?.(); return true; }}
+    {key: 'Mod-Shift-.', run: () => { hooks.onToggleMarks?.(); return true; }},
+    {key: 'Mod-=', run: () => { hooks.onSizeStep?.(1); return true; }},
+    {key: 'Mod-+', run: () => { hooks.onSizeStep?.(1); return true; }},
+    {key: 'Mod--', run: () => { hooks.onSizeStep?.(-1); return true; }},
+    {key: 'Mod-Shift-0', run: () => { hooks.onSizeStep?.(0); return true; }}
   ]);
 
   const state = EditorState.create({

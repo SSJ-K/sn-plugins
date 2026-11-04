@@ -28,5 +28,8 @@ export const I = {
   prev: () => <svg {...base}><path d="m12 5-5 5 5 5"/></svg>,
   next: () => <svg {...base}><path d="m8 5 5 5-5 5"/></svg>,
   tools: () => <svg {...base}><path d="M4 6h12M4 10h12M4 14h12"/></svg>,
+  textBigger: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><path d="M15.5 4v6M12.5 7h6"/></svg>,
+  textSmaller: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><path d="M12.5 7h6"/></svg>,
+  textReset: () => <svg {...base}><path d="M3 16 8 5l5 11M4.8 12h6.4"/><circle cx="15.5" cy="7" r="2.6"/></svg>,
   more: () => <svg {...base}><circle cx="5" cy="10" r="1.3" fill="currentColor"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>
 };

@@ -204,12 +204,22 @@ html, body {
 .dw-quote { color: var(--dw-muted); font-style: italic; }
 .dw-rule { color: var(--dw-mark); }
 
+/* Text size by frame width, as iA Writer does (measured on the iPhone Duo:
+   14.6 pt at 1.60 in a split pane, 16.1 pt at 1.65 full screen; 18 px kept
+   for a wide Mac window). The frame is the plugin's own window, so splitting
+   the phone screen narrows it and the text reflows at the smaller size. */
 .cm-editor {
   height: 100%;
   font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
-  font-size: 18px;
-  line-height: 1.65; /* measured in iA Writer: 79.7 px pitch at 48.2 px text */
+  font-size: calc(14.5px * var(--dw-scale, 1)); /* --dw-scale: the user's size steps, 1.1 per step */
+  line-height: 1.6;
   background-color: transparent;
+}
+@media (min-width: 520px) {
+  .cm-editor { font-size: calc(16px * var(--dw-scale, 1)); line-height: 1.65; }
+}
+@media (min-width: 900px) {
+  .cm-editor { font-size: calc(18px * var(--dw-scale, 1)); }
 }
 
 .cm-editor.cm-focused {
@@ -219,7 +229,7 @@ html, body {
 /* Selectors carry .cm-editor so they outrank CodeMirror's injected base theme. */
 .cm-editor .cm-scroller {
   font-family: inherit;
-  line-height: 1.65;
+  line-height: inherit;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   justify-content: center;

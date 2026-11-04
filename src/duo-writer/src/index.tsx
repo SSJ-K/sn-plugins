@@ -11,6 +11,11 @@ import {I} from './icons';
 
 type Editor = ReturnType<typeof createEditor>;
 
+// Screen class by frame width: the same bands as the base text size in index.css.
+type ScreenClass = 'narrow' | 'medium' | 'wide';
+const screenClass = (): ScreenClass => window.innerWidth < 520 ? 'narrow' : window.innerWidth < 900 ? 'medium' : 'wide';
+const MIN_STEP = -3, MAX_STEP = 6; // iA has 12 sizes; each step here is 10 percent
+
 const App = () => {
   const host = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
@@ -18,6 +23,10 @@ const App = () => {
   const [toolsOpen, setToolsOpen] = useState<boolean>(snApi.extensionMeta?.toolbar !== false);
   const [hideMarks, setHideMarks] = useState<boolean>(snApi.extensionMeta?.hideMarks === true);
   const [selectionTick, setSelectionTick] = useState(0);
+  const [sizeSteps, setSizeSteps] = useState<Record<string, number>>(snApi.extensionMeta?.sizeSteps || {});
+  const [screen, setScreen] = useState<ScreenClass>(screenClass());
+  const sizeStepsRef = useRef(sizeSteps);
+  sizeStepsRef.current = sizeSteps;
   const [findFocusTick, setFindFocusTick] = useState(0);
   const toolsOpenRef = useRef(toolsOpen);
   const hideMarksRef = useRef(hideMarks);
@@ -39,6 +48,21 @@ const App = () => {
     remember({hideMarks: next});
   };
 
+  const sizeStep = (delta: number) => {
+    const cls = screenClass();
+    const cur = sizeStepsRef.current[cls] || 0;
+    const next = delta === 0 ? 0 : Math.max(MIN_STEP, Math.min(MAX_STEP, cur + delta));
+    const all = {...sizeStepsRef.current, [cls]: next};
+    setSizeSteps(all);
+    remember({sizeSteps: all});
+  };
+
+  useEffect(() => {
+    const onResize = () => setScreen(screenClass());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   useEffect(() => {
     const text = snApi.text ?? '';
     const editor = createEditor(host.current, text, {
@@ -46,7 +70,8 @@ const App = () => {
       onSelectionChange: () => setSelectionTick(t => t + 1),
       onFind: () => { if (!toolsOpenRef.current) toggleTools(); setFindFocusTick(t => t + 1); },
       onToggleTools: toggleTools,
-      onToggleMarks: toggleMarks
+      onToggleMarks: toggleMarks,
+      onSizeStep: sizeStep
     });
     editor.setLocked(!!snApi.locked);
     editor.setHideMarks(hideMarksRef.current);
@@ -59,8 +84,11 @@ const App = () => {
     return () => { if (typeof unsubscribe === 'function') unsubscribe(); };
   }, []);
 
+  const step = sizeSteps[screen] || 0;
+  const scale = Math.pow(1.1, step);
+
   return (
-    <div className={'dw-app' + (toolsOpen ? ' dw-tools-open' : '')}>
+    <div className={'dw-app' + (toolsOpen ? ' dw-tools-open' : '')} style={{'--dw-scale': String(scale)} as any}>
       <div className="dw-corner">
         <button type="button" className={'dw-btn' + (hideMarks ? ' dw-active' : '')}
                 title={hideMarks ? 'Show Markdown marks (Cmd+Shift+.)' : 'Hide Markdown marks off the current line (Cmd+Shift+.)'}
@@ -73,7 +101,7 @@ const App = () => {
       </div>
       {ready && toolsOpen && (
         <Toolbar view={editorRef.current.view} undo={editorRef.current.undo} redo={editorRef.current.redo}
-                 selectionTick={selectionTick} findFocusTick={findFocusTick}/>
+                 selectionTick={selectionTick} findFocusTick={findFocusTick} onSizeStep={sizeStep}/>
       )}
       <div className="dw-host" ref={host}/>
     </div>

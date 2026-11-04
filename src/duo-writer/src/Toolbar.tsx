@@ -17,6 +17,7 @@ interface Props {
   redo: () => boolean;
   selectionTick: number;      // bumps on every selection change, to refresh the heading picker
   findFocusTick: number;      // bumps when Cmd+F is pressed
+  onSizeStep: (delta: number) => void;
 }
 
 interface Tool {
@@ -30,7 +31,7 @@ interface Tool {
   picker?: boolean;     // the heading picker, wider than a button
 }
 
-const Toolbar = ({view, undo, redo, selectionTick, findFocusTick}: Props) => {
+const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: Props) => {
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [count, setCount] = useState(0);
@@ -86,7 +87,10 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick}: Props) => {
     {key: 'table', group: 6, label: 'Table', title: 'Insert table', icon: I.table, run: () => insertTable(view)},
     {key: 'divider', group: 6, label: 'Divider', title: 'Insert divider', icon: I.divider, run: () => insertDivider(view)},
     {key: 'toc', group: 7, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
-    {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)}
+    {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)},
+    {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+=)', icon: I.textBigger, run: () => onSizeStep(1)},
+    {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
+    {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Shift+0)', icon: I.textReset, run: () => onSizeStep(0)}
   ];
 
   // Measure: how many tools fit in the row, leaving room for "more" when needed.

@@ -94,6 +94,9 @@ function layout(view: EditorView): DecorationSet {
   const {state} = view;
   const hide = state.field(hideMarksField);
   const active = hide ? linesWithCursor(state) : null;
+  // iA keeps heading marks inline when the pane is narrow (split phone screen)
+  // and hangs them only when there is room; same breakpoint as the text size.
+  const hangHeadings = view.dom.clientWidth >= 520;
   const b = new RangeSetBuilder<Decoration>();
   const items: {from: number; to: number; deco: Decoration}[] = [];
   for (const {from, to} of view.visibleRanges) {
@@ -108,7 +111,7 @@ function layout(view: EditorView): DecorationSet {
         if (isHeading) {
           // Hanging only while the marks are drawn; hidden marks leave the text flush.
           const marksDrawn = !hide || active.has(line.number);
-          if (marksDrawn) items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `text-indent:-${mark.length}ch`}})});
+          if (marksDrawn && hangHeadings) items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `text-indent:-${mark.length}ch`}})});
         } else {
           const w = indent + mark.length;
           items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `padding-left:${w}ch;text-indent:-${w}ch`}})});
@@ -140,7 +143,7 @@ const layoutPlugin = ViewPlugin.fromClass(class {
   update(u: ViewUpdate) {
     const toggled = u.transactions.some(tr => tr.effects.some(e => e.is(setHideMarks)));
     const reparsed = syntaxTree(u.state) !== syntaxTree(u.startState);
-    if (u.docChanged || u.viewportChanged || u.selectionSet || toggled || reparsed) this.decorations = layout(u.view);
+    if (u.docChanged || u.viewportChanged || u.selectionSet || u.geometryChanged || toggled || reparsed) this.decorations = layout(u.view);
   }
 }, {decorations: v => v.decorations});
 
