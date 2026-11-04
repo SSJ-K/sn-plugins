@@ -62,12 +62,14 @@ const App = () => {
     remember({sizeSteps: all});
   };
 
-  const togglePreview = () => {
-    const next = !previewRef.current;
+  // Preview mode is remembered per note in the note's plugin metadata (synced with the note).
+  const setPreviewMode = (next: boolean, persist: boolean) => {
     if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
     setPreview(next);
     if (!next) setTimeout(() => editorRef.current?.view.focus(), 0);
+    if (persist) snApi.meta = {...(snApi.meta || {}), preview: next};
   };
+  const togglePreview = () => setPreviewMode(!previewRef.current, true);
 
   useEffect(() => {
     const onResize = () => setScreen(screenClass());
@@ -90,6 +92,7 @@ const App = () => {
     editor.setHideMarks(hideMarksRef.current);
     editorRef.current = editor;
     setReady(true);
+    if (snApi.meta?.preview === true) setPreviewMode(true, false);
     const unsubscribe = snApi.subscribe(() => {
       editor.setText(snApi.text ?? '');
       editor.setLocked(!!snApi.locked);

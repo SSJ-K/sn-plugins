@@ -7,6 +7,7 @@ export class MockStandardNotes {
   private childWindow;
   private streamEvent;
   private streamData;
+  private current: TestData;
 
   constructor(data: TestData, private onSave: () => void) {
     this.updateStream(data);
@@ -59,6 +60,12 @@ export class MockStandardNotes {
         original: data
       }, '*');
     } else if (data.action === 'save-items') {
+      // Keep what the plugin saved (text and per-note metadata), as the real app does.
+      const saved = data.data?.items?.[0];
+      if (saved && this.current) {
+        this.current.text = saved.content.text;
+        this.current.meta = saved.content.appData?.[saved.content.editorIdentifier];
+      }
       this.onSave();
       this.childWindow.postMessage({
         action: 'reply',
@@ -71,6 +78,7 @@ export class MockStandardNotes {
   }
 
   private updateStream(data: TestData) {
+    this.current = data;
     this.streamData = JSON.parse(JSON.stringify(STREAM_EVENT_DATA));
     this.streamData.item.content.text = data.text;
     this.streamData.item.content.appData[this.streamData.item.content.editorIdentifier] = data.meta;

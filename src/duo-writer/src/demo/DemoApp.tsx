@@ -9,6 +9,8 @@ const mock = new MockStandardNotes(TEST_DATA[0], () => {
   }
 });
 
+(window as any).__mock = mock; // diagnostics
+
 const DemoApp = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selected, setSelected] = useState(0);
