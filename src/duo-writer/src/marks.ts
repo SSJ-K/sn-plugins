@@ -52,9 +52,6 @@ function build(view: EditorView): DecorationSet {
           if (end < line.to && state.doc.sliceString(end, end + 1) === ' ') end += 1;
           // Trailing "#" marks of a closed heading: leave them, rare.
         }
-        if (name === 'LinkMark') {
-          // Keep an unobtrusive hint that this is a link: hide only the brackets and parens.
-        }
         ranges.push({from: node.from, to: end});
       }
     });
@@ -105,12 +102,44 @@ function layout(view: EditorView): DecorationSet {
   const hangHeadings = view.dom.clientWidth >= 520;
   const b = new RangeSetBuilder<Decoration>();
   const items: {from: number; to: number; deco: Decoration}[] = [];
+  const fenced = new Set<number>(); // line numbers inside fenced code: no hanging marks or list indents there
+  syntaxTree(state).iterate({
+    from: view.visibleRanges[0]?.from ?? 0,
+    to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
+    enter(node) {
+      // Fenced code blocks: one grey box around the fence lines (iA: #f0f0f0, no vertical
+      // padding, one-character overhang left and right, 0.17 em corners).
+      if (node.name === 'FencedCode') {
+        const first = state.doc.lineAt(node.from).number, last = state.doc.lineAt(node.to).number;
+        for (let n = first; n <= last; n++) {
+          fenced.add(n);
+          const line = state.doc.line(n);
+          const cls = 'dw-codeblock' + (n === first ? ' dw-codeblock-first' : '') + (n === last ? ' dw-codeblock-last' : '');
+          items.push({from: line.from, to: line.from, deco: Decoration.line({class: cls})});
+        }
+        return;
+      }
+      // Mark kinds that iA draws differently from the generic grey.
+      if (node.name === 'HeaderMark') { items.push({from: node.from, to: node.to, deco: hashMark}); return; }
+      if (node.name === 'EmphasisMark' && node.to - node.from >= 2) { items.push({from: node.from, to: node.to, deco: strongMark}); return; }
+      if (node.name === 'LinkMark') { items.push({from: node.from, to: node.to, deco: linkMark}); return; }
+      if (node.name === 'ListMark') { items.push({from: node.from, to: node.to, deco: listMark}); return; }
+      if (node.name === 'QuoteMark') { items.push({from: node.from, to: node.to, deco: quoteMark}); return; }
+      // Done checklist items: strike the text after "[x] ".
+      if (node.name !== 'Task') return;
+      const marker = node.node.getChild('TaskMarker');
+      if (!marker) return;
+      const txt = state.sliceDoc(marker.from, marker.to);
+      items.push({from: marker.from, to: marker.to, deco: taskMark});
+      if (/x/i.test(txt) && marker.to < node.to) items.push({from: marker.to, to: node.to, deco: doneMark});
+    }
+  });
   for (const {from, to} of view.visibleRanges) {
     let pos = from;
     while (pos <= to) {
       const line = state.doc.lineAt(pos);
       const m = LINE_START.exec(line.text);
-      if (m) {
+      if (m && !fenced.has(line.number)) {
         const indent = m[1].length;
         const mark = m[2];
         const isHeading = mark.startsWith('#');
@@ -129,40 +158,6 @@ function layout(view: EditorView): DecorationSet {
       pos = line.to + 1;
     }
   }
-  // Fenced code blocks: one grey box around the fence lines (iA: #f0f0f0, no vertical
-  // padding, one-character overhang left and right, 0.17 em corners).
-  syntaxTree(state).iterate({
-    from: view.visibleRanges[0]?.from ?? 0,
-    to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
-    enter(node) {
-      if (node.name !== 'FencedCode') return;
-      const first = state.doc.lineAt(node.from).number, last = state.doc.lineAt(node.to).number;
-      for (let n = first; n <= last; n++) {
-        const line = state.doc.line(n);
-        const cls = 'dw-codeblock' + (n === first ? ' dw-codeblock-first' : '') + (n === last ? ' dw-codeblock-last' : '');
-        items.push({from: line.from, to: line.from, deco: Decoration.line({class: cls})});
-      }
-    }
-  });
-  // Done checklist items: strike the text after "[x] ".
-  syntaxTree(state).iterate({
-    from: view.visibleRanges[0]?.from ?? 0,
-    to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
-    enter(node) {
-      // Mark kinds that iA draws differently from the generic grey.
-      if (node.name === 'HeaderMark') { items.push({from: node.from, to: node.to, deco: hashMark}); return; }
-      if (node.name === 'EmphasisMark' && node.to - node.from >= 2) { items.push({from: node.from, to: node.to, deco: strongMark}); return; }
-      if (node.name === 'LinkMark') { items.push({from: node.from, to: node.to, deco: linkMark}); return; }
-      if (node.name === 'ListMark') { items.push({from: node.from, to: node.to, deco: listMark}); return; }
-      if (node.name === 'QuoteMark') { items.push({from: node.from, to: node.to, deco: quoteMark}); return; }
-      if (node.name !== 'Task') return;
-      const marker = node.node.getChild('TaskMarker');
-      if (!marker) return;
-      const txt = state.sliceDoc(marker.from, marker.to);
-      items.push({from: marker.from, to: marker.to, deco: taskMark});
-      if (/x/i.test(txt) && marker.to < node.to) items.push({from: marker.to, to: node.to, deco: doneMark});
-    }
-  });
   items.sort((a, c) => a.from - c.from || (a.deco.spec.attributes ? -1 : c.deco.spec.attributes ? 1 : 0) || a.to - c.to);
   for (const it of items) b.add(it.from, it.to, it.deco);
   return b.finish();

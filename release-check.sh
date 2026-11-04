@@ -7,7 +7,9 @@ set -u
 cd "$(dirname "$0")"
 fail=0
 ok()   { echo "PASS  $1"; }
-bad()  { echo "FAIL  $1"; fail=1; }
+bad()  { echo "FAIL  $1"; fail=$((fail + 1)); }
+# For items that loop: PASS only when the loop added no failure since mark was taken.
+okif() { [ "$fail" -eq "$mark" ] && ok "$1"; }
 
 # 1. Fonts are declared binary in git
 if git check-attr binary themes/duo/iAWriterDuoS-Regular.woff2 | grep -q 'binary: set'; then ok "git treats fonts as binary"; else bad "git does not treat fonts as binary (.gitattributes)"; fi
@@ -23,12 +25,14 @@ import sys, struct, os
 b = open(sys.argv[1], 'rb').read(12)
 sys.exit(0 if b[:4] == b'wOF2' and struct.unpack('>I', b[8:12])[0] == os.path.getsize(sys.argv[1]) else 1)" "$f"
 }
+mark=$fail
 for f in themes/duo/*.woff2 src/duo-writer/public/fonts/*.woff2; do
   if fontcheck "$f"; then :; else bad "font does not parse: $f"; fi
 done
-ok "source fonts have a valid WOFF2 header and declared length (or pass ots-sanitize)"
+okif "source fonts have a valid WOFF2 header and declared length (or pass ots-sanitize)"
 
 # 3. Built fonts are byte-identical to their sources (catches text transforms on binaries)
+mark=$fail
 for f in src/duo-writer/public/fonts/*.woff2; do
   b="editors/duo-writer/fonts/$(basename "$f")"
   if [ -f "$b" ] && cmp -s "$f" "$b"; then :; else bad "built font differs or missing: $b"; fi
@@ -37,7 +41,7 @@ for f in themes/duo/*.woff2; do
   b="editors/duo-writer/fonts/$(basename "$f")"
   if [ -f "$b" ] && cmp -s "$f" "$b"; then :; else bad "built font differs or missing: $b"; fi
 done
-ok "built fonts byte-identical to sources"
+okif "built fonts byte-identical to sources"
 
 # 4. No unreplaced template placeholders in the built descriptors or CSS/JS
 if grep -rq '\$VERSION\$' editors/duo-writer/ext.json editors/duo-writer/package.json; then bad "unreplaced \$VERSION\$ in a descriptor"; else ok "descriptors have no unreplaced placeholders"; fi
@@ -65,14 +69,15 @@ for f in src/duo-writer/public/fonts/*.woff2; do echo "$list" | grep -q "fonts/$
 echo "$list" | grep -q "^demo" && bad "zip contains demo files" || ok "zip has no demo files"
 
 # 8. Built CSS references only fonts that are shipped
+mark=$fail
 for ref in $(grep -o "fonts/[A-Za-z0-9._-]*\.woff2" editors/duo-writer/main.*.js | sort -u); do
   [ -f "editors/duo-writer/$ref" ] || bad "CSS references a font not shipped: $ref"
 done
-ok "every font referenced by the built CSS is shipped"
+okif "every font referenced by the built CSS is shipped"
 
 # 9. Working tree clean apart from this run's build output is the committer's call; report it
 dirty=$(git status --short | wc -l | tr -d ' ')
 echo "INFO  $dirty changed path(s) in the working tree"
 
 [ "$fail" -eq 0 ] && echo "ALL CODE CHECKS PASSED for $v_src" || echo "CODE CHECKS FAILED"
-exit $fail
+exit $((fail > 0))

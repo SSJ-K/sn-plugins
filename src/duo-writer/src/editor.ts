@@ -1,9 +1,8 @@
 // The writing surface: CodeMirror 6 with Markdown parsing, iA-style
 // in-place styling (headings, emphasis, links, code, quotes) with the marks
 // in light grey, or hidden off the current line when "hide marks" is on.
-import {EditorState, Compartment} from '@codemirror/state';
+import {EditorState, Compartment, EditorSelection, Transaction} from '@codemirror/state';
 import {EditorView, keymap, drawSelection} from '@codemirror/view';
-import {EditorSelection} from '@codemirror/state';
 import {defaultKeymap, history, historyKeymap, undo, redo} from '@codemirror/commands';
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
@@ -41,13 +40,14 @@ export interface EditorHooks {
   onFind?: () => void;        // Cmd+F: focus the find field
   onToggleTools?: () => void; // Cmd+.: show or hide the tools row
   onToggleMarks?: () => void; // Cmd+Shift+.: show or hide the marks
-  onSizeStep?: (delta: number) => void;
-  onTogglePreview?: () => void; // Cmd+R, as in iA Writer // Cmd+Option+= bigger, Cmd+Option+- smaller, Cmd+Option+0 reset
+  onSizeStep?: (delta: number) => void; // Cmd+Option+= bigger, Cmd+Option+- smaller, Cmd+Option+0 reset
+  onTogglePreview?: () => void; // Cmd+Option+P (iA's Cmd+R is the desktop app's Reload)
 }
 
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
   const editable = new Compartment();
   let applyingExternal = false;
+  let locked = false;
 
   const toolKeymap = keymap.of([
     {key: 'Mod-b', run: toggleMark('**')},
@@ -74,7 +74,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Alt-=', run: () => { hooks.onSizeStep?.(1); return true; }},
     {key: 'Mod-Alt--', run: () => { hooks.onSizeStep?.(-1); return true; }},
     {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }},
-    {key: 'Mod-r', run: () => { hooks.onTogglePreview?.(); return true; }},
+    {key: 'Mod-Alt-p', run: () => { hooks.onTogglePreview?.(); return true; }},
     {key: 'Mod-Shift-h', run: toggleMark('==')},
     {key: 'Mod-Shift-w', run: insertCalendarWeek},
     {key: 'Mod-Shift-d', run: insertToday}
@@ -109,6 +109,8 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       toolKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       editable.of(EditorView.editable.of(true)),
+      // A locked note ("Prevent editing") refuses every change, tools included; only text from the app gets in.
+      EditorState.changeFilter.of(() => !locked || applyingExternal),
       EditorView.updateListener.of((update) => {
         if (update.docChanged && !applyingExternal) {
           hooks.onChange(update.state.doc.toString());
@@ -119,7 +121,6 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   });
 
   const view = new EditorView({state, parent});
-  (window as any).__dw = view; // diagnostics on the demo page
 
   return {
     view,
@@ -128,12 +129,22 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     setText(text: string) {
       const current = view.state.doc.toString();
       if (current === text) return;
+      // Replace only the part that differs, so the cursor and earlier undo steps keep their places.
+      const max = Math.min(current.length, text.length);
+      let head = 0, tail = 0;
+      while (head < max && current.charCodeAt(head) === text.charCodeAt(head)) head++;
+      while (tail < max - head && current.charCodeAt(current.length - 1 - tail) === text.charCodeAt(text.length - 1 - tail)) tail++;
       applyingExternal = true;
-      view.dispatch({changes: {from: 0, to: current.length, insert: text}});
+      // Synced text from another device is not undoable here: Cmd+Z must never erase someone else's edit.
+      view.dispatch({
+        changes: {from: head, to: current.length - tail, insert: text.slice(head, text.length - tail)},
+        annotations: Transaction.addToHistory.of(false)
+      });
       applyingExternal = false;
     },
-    setLocked(locked: boolean) {
-      view.dispatch({effects: editable.reconfigure(EditorView.editable.of(!locked))});
+    setLocked(next: boolean) {
+      locked = next;
+      view.dispatch({effects: editable.reconfigure(EditorView.editable.of(!next))});
     },
     setHideMarks(hide: boolean) {
       view.dispatch({effects: setHideMarks.of(hide)});

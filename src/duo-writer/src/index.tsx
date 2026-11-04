@@ -96,6 +96,7 @@ const App = () => {
     const unsubscribe = snApi.subscribe(() => {
       editor.setText(snApi.text ?? '');
       editor.setLocked(!!snApi.locked);
+      if (previewRef.current) setPreviewHtml(renderPreview(snApi.text ?? ''));
     });
     return () => { if (typeof unsubscribe === 'function') unsubscribe(); };
   }, []);
@@ -107,7 +108,7 @@ const App = () => {
     <div className={'dw-app' + (toolsOpen ? ' dw-tools-open' : '')} style={{'--dw-scale': String(scale)} as any}>
       <div className="dw-corner">
         <button type="button" className={'dw-btn dw-play' + (preview ? ' dw-play-on' : '')}
-                title={preview ? 'Back to editing (Cmd+R)' : 'Preview (Cmd+R)'} aria-label="Preview"
+                title={preview ? 'Back to editing (Cmd+Option+P)' : 'Preview (Cmd+Option+P)'} aria-label="Preview"
                 onMouseDown={(e) => e.preventDefault()} onClick={togglePreview}>{preview ? <I.edit/> : <I.play/>}</button>
         <button type="button" className={'dw-btn' + (hideMarks ? ' dw-active' : '')}
                 title={hideMarks ? 'Show Markdown marks (Cmd+Shift+.)' : 'Hide Markdown marks off the current line (Cmd+Shift+.)'}
@@ -157,7 +158,7 @@ window.addEventListener('load', recheck);
 const root = createRoot(document.getElementById('root'));
 let mounted = false;
 
-snApi.initialize({debounceSave: 400});
+snApi.initialize({debounceSave: 250}); // a save still waiting dies with the frame on a note switch; keep the wait short
 
 // Mount once the first note has arrived; later notes flow through subscribe inside App.
 snApi.subscribe(() => {

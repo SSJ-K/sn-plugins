@@ -58,10 +58,7 @@ html, body {
   background-color: #f9f9f9;
   color: #191919;
 }
-@media (prefers-color-scheme: dark) {
-  html, body { background-color: var(--sn-stylekit-background-color, #1b1b1b); color: var(--sn-stylekit-foreground-color, #e6e6e6); }
-}
-/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+/* Dark palette only when a dark Standard Notes theme is on (attribute set by index.tsx), never from the system setting alone. */
 html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-stylekit-background-color, #1b1b1b); color: var(--sn-stylekit-foreground-color, #e6e6e6); }
 
 .dw-app { background: var(--dw-bg); color: var(--dw-fg); }
@@ -95,20 +92,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 @media (hover: none) {
   .dw-app { --dw-btn: 40px; --dw-gap: 2px; } /* K chose 40 over the design reference's 44 pt floor, 2026-11-04 */
 }
-@media (prefers-color-scheme: dark) {
-  .dw-app {
-    --dw-muted: var(--sn-stylekit-neutral-color, #9a9a9a);
-    --dw-mark: #8a8a8a;
-    --dw-faint: #6f6f6f;
-    --dw-listmark: #c8c8c8;
-    --dw-codebg: var(--sn-stylekit-contrast-background-color, #2a2a2a);
-    --dw-border: var(--sn-stylekit-border-color, #333);
-    --dw-fg: var(--sn-stylekit-foreground-color, #e6e6e6);
-    --dw-bg: var(--sn-stylekit-background-color, #1b1b1b);
-    --dw-caret: #00afe7;
-  }
-}
-/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+/* Dark palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
 [data-dw-dark] .dw-app { --dw-muted: var(--sn-stylekit-neutral-color, #9a9a9a);
     --dw-mark: #8a8a8a;
     --dw-faint: #6f6f6f;
@@ -176,11 +160,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-btn:active { background: rgba(0, 0, 0, 0.1); color: var(--dw-fg); }
 .dw-btn.dw-active { background: rgba(0, 0, 0, 0.08); color: var(--dw-fg); }
 .dw-btn:focus-visible { outline: 2px solid rgba(0, 0, 0, 0.25); outline-offset: -2px; }
-@media (prefers-color-scheme: dark) {
-  .dw-btn:hover { background: rgba(255, 255, 255, 0.08); }
-  .dw-btn:active, .dw-btn.dw-active { background: rgba(255, 255, 255, 0.12); }
-}
-/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+/* Dark Standard Notes theme (attribute set by index.tsx). */
 [data-dw-dark] .dw-btn:hover { background: rgba(255, 255, 255, 0.08); }
 [data-dw-dark] .dw-btn:active, [data-dw-dark]  .dw-btn.dw-active { background: rgba(255, 255, 255, 0.12); }
 
@@ -375,8 +355,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 }
 @media (min-width: 520px) { .dw-preview { font-size: calc(16px * var(--dw-scale, 1)); } }
 @media (min-width: 900px) { .dw-preview { font-size: calc(18px * var(--dw-scale, 1)); } }
-@media (prefers-color-scheme: dark) { .dw-preview { background: var(--dw-bg); color: var(--dw-fg); } }
-/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+/* Dark Standard Notes theme (attribute set by index.tsx). */
 [data-dw-dark] .dw-preview { background: var(--dw-bg); color: var(--dw-fg); }
 
 
@@ -403,7 +382,6 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-preview li.task-list-item input { position: absolute; left: 0.05em; top: 0.3em; width: 0.95em; height: 0.95em; margin: 0; appearance: none; -webkit-appearance: none; border: 1.5px solid #1a1a1a; border-radius: 3px; background: transparent; }
 .dw-preview li.task-list-item input:checked { border-color: #9a9a9a; }
 .dw-preview li.task-list-item input:checked::after { content: ''; position: absolute; left: 0.22em; top: 0.02em; width: 0.3em; height: 0.55em; border: solid #9a9a9a; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
-.dw-preview li.task-list-item input:checked + * , .dw-preview li.task-list-item.done { }
 .dw-preview li.task-list-item:has(input:checked) { color: #9a9a9a; text-decoration: line-through; }
 .dw-preview blockquote { margin: 3em 0 1.45em 0; padding: 0 0 0 1.2em; font-style: italic; } /* list to quote 6.3 em, quote to body 3.1 em */
 .dw-preview blockquote p { margin: 0; }
@@ -422,13 +400,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-preview .footnotes { margin-top: 2.4em; border-top: 2px solid #1a1a1a; padding-top: 1em; font-size: 0.9em; }
 .dw-preview .footnotes-sep { display: none; }
 .dw-preview .footnote-backref { display: none; }
-@media (prefers-color-scheme: dark) {
-  .dw-preview code, .dw-preview pre { background: var(--dw-codebg); }
-  .dw-preview th, .dw-preview td { border-color: var(--dw-border); }
-  .dw-preview hr, .dw-preview .footnotes { border-color: var(--dw-fg); }
-  .dw-preview li.task-list-item input { border-color: var(--dw-fg); }
-}
-/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+/* Dark Standard Notes theme (attribute set by index.tsx). */
 [data-dw-dark] .dw-preview code, [data-dw-dark]  .dw-preview pre { background: var(--dw-codebg); }
 [data-dw-dark] .dw-preview th, [data-dw-dark]  .dw-preview td { border-color: var(--dw-border); }
 [data-dw-dark] .dw-preview hr, [data-dw-dark]  .dw-preview .footnotes { border-color: var(--dw-fg); }

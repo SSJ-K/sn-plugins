@@ -38,15 +38,27 @@ export function setHeading(level: number) {
   };
 }
 
+/** Length of the run of character c at the start (or the end) of s. */
+function runOf(s: string, c: string, fromEnd: boolean): number {
+  let n = 0;
+  while (n < s.length && s[fromEnd ? s.length - 1 - n : n] === c) n++;
+  return n;
+}
+
+// Does a run of mark characters carry this mark? ** is bold, not italic; *** is both.
+const carries = (run: number, len: number) => len === 1 ? run % 2 === 1 : run >= len;
+
 /** Wrap the selection in a mark (bold **, italic *); unwrap if already wrapped. */
 export function toggleMark(mark: string) {
   return (view: EditorView) => {
     const {state} = view;
+    const c = mark[0];
     const tr = state.changeByRange((range) => {
       const text = state.sliceDoc(range.from, range.to);
       const len = mark.length;
       // Already wrapped inside the selection: **text**
-      if (text.length >= 2 * len && text.startsWith(mark) && text.endsWith(mark)) {
+      const inside = Math.min(runOf(text, c, false), runOf(text, c, true));
+      if (inside * 2 < text.length && carries(inside, len)) {
         const inner = text.slice(len, text.length - len);
         return {
           changes: {from: range.from, to: range.to, insert: inner},
@@ -54,9 +66,9 @@ export function toggleMark(mark: string) {
         };
       }
       // Already wrapped around the selection: **[text]**
-      const before = state.sliceDoc(Math.max(0, range.from - len), range.from);
-      const after = state.sliceDoc(range.to, Math.min(state.doc.length, range.to + len));
-      if (before === mark && after === mark) {
+      const before = state.sliceDoc(Math.max(0, range.from - 3), range.from);
+      const after = state.sliceDoc(range.to, Math.min(state.doc.length, range.to + 3));
+      if (carries(Math.min(runOf(before, c, true), runOf(after, c, false)), len)) {
         return {
           changes: [
             {from: range.from - len, to: range.from, insert: ''},
@@ -127,7 +139,16 @@ export function toggleChecklist(view: EditorView) {
 
 const QUOTE = /^(\s*)> ?/;
 const NUMBER = /^(\s*)\d+\. /;
-const INLINE_MARKS = /(\*\*|__|\*|_|~~|`)/g;
+// Matched pairs only, double marks first; underscores count only at word edges, so my_file_name stays.
+const INLINE_PAIRS: [RegExp, string][] = [
+  [/(\*\*|~~|==)(?=\S)(.*?\S)\1/g, '$2'],
+  [/(^|\W)__(?=\S)(.*?\S)__(?!\w)/g, '$1$2'],
+  [/\*(?=\S)(.*?\S)\*/g, '$1'],
+  [/(^|\W)_(?=\S)(.*?\S)_(?!\w)/g, '$1$2'],
+  [/`([^`\n]+)`/g, '$1']
+];
+const stripInline = (s: string) => INLINE_PAIRS.reduce((t, [re, to]) => t.replace(re, to), s);
+const FENCE = /^\s{0,3}(```|~~~)/;
 
 /** Quote on or off for every selected line. */
 export function toggleQuote(view: EditorView) {
@@ -234,11 +255,10 @@ export function clearFormatting(view: EditorView) {
   const from = r.empty ? first.from : r.from;
   const to = r.empty ? last.to : r.to;
   const text = state.sliceDoc(from, to);
-  const cleaned = text
+  const cleaned = stripInline(text
     .split('\n')
     .map(l => l.replace(HEADING, '').replace(CHECK, '$1').replace(BULLET, '$1').replace(NUMBER, '$1').replace(QUOTE, '$1'))
-    .join('\n')
-    .replace(INLINE_MARKS, '');
+    .join('\n'));
   if (cleaned === text) return true;
   view.dispatch({changes: {from, to, insert: cleaned}, selection: EditorSelection.range(from, from + cleaned.length)});
   view.focus();
@@ -248,8 +268,12 @@ export function clearFormatting(view: EditorView) {
 /** Headings in the note, for the table of contents. */
 export function headings(state: EditorState): {level: number; text: string; pos: number}[] {
   const out = [];
+  // shortcut: any fence line opens or closes, so a ``` block closed by ~~~ miscounts; use the syntax tree if that bites.
+  let fenced = false;
   for (let n = 1; n <= state.doc.lines; n++) {
     const line = state.doc.line(n);
+    if (FENCE.test(line.text)) { fenced = !fenced; continue; }
+    if (fenced) continue;
     const m = HEADING.exec(line.text);
     if (m) out.push({level: m[1].length, text: line.text.slice(m[0].length).trim(), pos: line.from});
   }
@@ -266,7 +290,9 @@ export function jumpTo(view: EditorView, pos: number) {
 export function calendarWeek(d = new Date()): string {
   const jan1 = new Date(d.getFullYear(), 0, 1);
   const sundayBefore = new Date(jan1); sundayBefore.setDate(jan1.getDate() - jan1.getDay());
-  const days = Math.floor((d.getTime() - sundayBefore.getTime()) / 86400000);
+  // Whole calendar days, rounded: a daylight-saving day is 23 or 25 hours long.
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const days = Math.round((day.getTime() - sundayBefore.getTime()) / 86400000);
   return 'CW' + String(Math.floor(days / 7) + 1).padStart(2, '0');
 }
 
@@ -284,8 +310,11 @@ function insertAtCursor(view: EditorView, text: string) {
 export const insertCalendarWeek = (view: EditorView) => insertAtCursor(view, calendarWeek());
 export const insertToday = (view: EditorView) => insertAtCursor(view, todayMDY());
 
-// Self-check of the week rule against known dates (runs once at load, console only).
+// Self-check of the week rule and clear formatting against known cases (runs once at load, console only).
+// Times are 00:30 on purpose: summer Sundays just after midnight once gave last week (2026-07-12 gave CW28).
 if (typeof console !== 'undefined') {
-  const cases: [number, number, number, string][] = [[2026, 0, 1, 'CW01'], [2026, 0, 3, 'CW01'], [2026, 0, 4, 'CW02'], [2026, 10, 4, 'CW45'], [2025, 11, 31, 'CW53']];
-  for (const [y, m, d, want] of cases) { const got = calendarWeek(new Date(y, m, d)); if (got !== want) console.error('calendarWeek self-check failed', y, m + 1, d, got, want); }
+  const cases: [number, number, number, string][] = [[2026, 0, 1, 'CW01'], [2026, 0, 3, 'CW01'], [2026, 0, 4, 'CW02'], [2026, 6, 12, 'CW29'], [2026, 10, 4, 'CW45'], [2025, 11, 31, 'CW53']];
+  for (const [y, m, d, want] of cases) { const got = calendarWeek(new Date(y, m, d, 0, 30)); if (got !== want) console.error('calendarWeek self-check failed', y, m + 1, d, got, want); }
+  const strips: [string, string][] = [['my_file_name 2*3', 'my_file_name 2*3'], ['**b** *i* _u_ ==h== `c` ~~s~~', 'b i u h c s'], ['***bi***', 'bi']];
+  for (const [s, want] of strips) { const got = stripInline(s); if (got !== want) console.error('clearFormatting self-check failed', s, got, want); }
 }
