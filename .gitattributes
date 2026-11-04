@@ -1,0 +1,7 @@
+# Fonts are binary: never let line-ending or text filters touch them
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.png binary
