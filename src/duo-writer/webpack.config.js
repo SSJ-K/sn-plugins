@@ -19,7 +19,7 @@ module.exports = (env, argv) => ({
     path: OUT,
     filename: '[name].[contenthash].js',
     publicPath: '',
-    clean: true
+    clean: {keep: /\.zip$/} // older release zips stay published (see build.sh)
   },
   module: {
     rules: [
