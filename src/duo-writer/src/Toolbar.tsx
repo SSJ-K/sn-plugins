@@ -70,7 +70,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
 
   // Priority order: most used first. Everything after what fits goes under "more".
   const tools: Tool[] = [
-    {key: 'heading', group: 2, label: 'Text style', title: 'Text style (Cmd+0 to Cmd+6)', run: () => {}, picker: true},
+    {key: 'heading', group: 2, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
     {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
     {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
     {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
@@ -88,9 +88,9 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
     {key: 'divider', group: 6, label: 'Divider', title: 'Insert divider', icon: I.divider, run: () => insertDivider(view)},
     {key: 'toc', group: 7, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
     {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)},
-    {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+=)', icon: I.textBigger, run: () => onSizeStep(1)},
-    {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
-    {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Shift+0)', icon: I.textReset, run: () => onSizeStep(0)}
+    {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+Option+=)', icon: I.textBigger, run: () => onSizeStep(1)},
+    {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+Option+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
+    {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Option+0)', icon: I.textReset, run: () => onSizeStep(0)}
   ];
 
   // Measure: how many tools fit in the row, leaving room for "more" when needed.
@@ -130,7 +130,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   );
 
   const picker = (
-    <span key="heading" className="dw-selectwrap" title="Text style (Cmd+0 to Cmd+6)">
+    <span key="heading" className="dw-selectwrap" title="Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)">
       <span className="dw-sellabel" aria-hidden="true">{level ? 'H' + level : '¶'}</span>
       <select className="dw-select" value={level} aria-label="Text style"
               onMouseDown={(e) => e.stopPropagation()}

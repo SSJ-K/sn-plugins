@@ -38,7 +38,7 @@ export interface EditorHooks {
   onFind?: () => void;        // Cmd+F: focus the find field
   onToggleTools?: () => void; // Cmd+.: show or hide the tools row
   onToggleMarks?: () => void; // Cmd+Shift+.: show or hide the marks
-  onSizeStep?: (delta: number) => void; // Cmd+= bigger, Cmd+- smaller, 0 = reset (Cmd+Shift+0)
+  onSizeStep?: (delta: number) => void; // Cmd+Option+= bigger, Cmd+Option+- smaller, Cmd+Option+0 reset
 }
 
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
@@ -51,7 +51,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Shift-x', run: toggleMark('~~')},
     {key: 'Mod-e', run: toggleMark('`')},
     {key: 'Mod-k', run: insertLink},
-    {key: 'Mod-0', run: setHeading(0)},
+    {key: 'Mod-Shift-0', run: setHeading(0)}, // Cmd+0 is window zoom in the desktop app
     {key: 'Mod-1', run: setHeading(1)},
     {key: 'Mod-2', run: setHeading(2)},
     {key: 'Mod-3', run: setHeading(3)},
@@ -66,10 +66,10 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-f', run: () => { hooks.onFind?.(); return true; }},
     {key: 'Mod-.', run: () => { hooks.onToggleTools?.(); return true; }},
     {key: 'Mod-Shift-.', run: () => { hooks.onToggleMarks?.(); return true; }},
-    {key: 'Mod-=', run: () => { hooks.onSizeStep?.(1); return true; }},
-    {key: 'Mod-+', run: () => { hooks.onSizeStep?.(1); return true; }},
-    {key: 'Mod--', run: () => { hooks.onSizeStep?.(-1); return true; }},
-    {key: 'Mod-Shift-0', run: () => { hooks.onSizeStep?.(0); return true; }}
+    // Cmd+= / Cmd+- / Cmd+0 belong to the desktop app's window zoom; Option keeps ours separate.
+    {key: 'Mod-Alt-=', run: () => { hooks.onSizeStep?.(1); return true; }},
+    {key: 'Mod-Alt--', run: () => { hooks.onSizeStep?.(-1); return true; }},
+    {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }}
   ]);
 
   const state = EditorState.create({
