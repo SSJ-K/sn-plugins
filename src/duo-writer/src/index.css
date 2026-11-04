@@ -85,6 +85,7 @@ html, body {
   --dw-border: #e4e4e4;
   --dw-fg: #191919;
   --dw-bg: #f9f9f9;
+  --dw-caret: #00b8f8;         /* iA's caret, sampled from its App Store images */
   --dw-btn: 32px;
   --dw-gap: 4px;
 }
@@ -101,6 +102,7 @@ html, body {
     --dw-border: var(--sn-stylekit-border-color, #333);
     --dw-fg: var(--sn-stylekit-foreground-color, #e6e6e6);
     --dw-bg: var(--sn-stylekit-background-color, #1b1b1b);
+    --dw-caret: #00afe7;
   }
 }
 
@@ -247,8 +249,8 @@ html, body {
 /* ---- In-place Markdown styling, colours as measured in iA Writer ---------- */
 .dw-match { background-color: rgba(255, 200, 0, 0.35); border-radius: 2px; }
 .dw-mark { color: var(--dw-mark); font-weight: normal; font-style: normal; text-decoration: none; }
-.dw-hashmark { color: var(--dw-fg); font-weight: bold; }           /* # marks: dark and bold like the heading */
-.dw-strongmark { color: var(--dw-fg); font-weight: bold; }         /* ** marks: dark */
+.dw-hashmark { color: var(--dw-fg); font-weight: 650; }            /* # marks: dark, iA's Semibold like the heading */
+.dw-strongmark { color: var(--dw-fg); font-weight: 650; }          /* ** marks: dark, Semibold */
 .dw-listmark { color: var(--dw-listmark); }                         /* only the marker, never the item text */
 .dw-link { color: var(--dw-fg); text-decoration: none; }
 .dw-linkmark { color: var(--dw-faint); font-weight: normal; }
@@ -303,7 +305,7 @@ html, body {
   box-sizing: border-box;
   margin: 0;
   padding: 3.5em 4.5ch 50vh 4.5ch; /* iA Writer: 130 px side margin, 4.3 em from chrome to first ink (old em) */
-  caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
+  caret-color: var(--dw-caret);
 }
 /* Phones only (touch screen narrower than 900 pt): 50 characters, iA's effective width there.
    Keyed to the device, so a narrow Mac pane keeps 64; an iPad in landscape (900 pt and wider)
@@ -319,4 +321,5 @@ html, body {
 
 .cm-editor .cm-cursor {
   border-left-width: 2px;
+  border-left-color: var(--dw-caret);
 }

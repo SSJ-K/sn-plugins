@@ -12,14 +12,15 @@ import {findExtension} from './find';
 import {marksExtension, setHideMarks, layoutExtension} from './marks';
 
 const duoStyle = HighlightStyle.define([
-  // iA Writer draws headings at body size, bold, with the # marks hanging in the margin.
-  {tag: tags.heading1, fontWeight: 'bold'},
-  {tag: tags.heading2, fontWeight: 'bold'},
-  {tag: tags.heading3, fontWeight: 'bold'},
-  {tag: tags.heading4, fontWeight: 'bold'},
-  {tag: tags.heading5, fontWeight: 'bold'},
-  {tag: tags.heading6, fontWeight: 'bold'},
-  {tag: tags.strong, fontWeight: 'bold'},
+  // iA Writer draws headings at body size, with the # marks hanging in the margin.
+  // Weight 650 is iA's "Semibold" instance; measured heading stroke 8.9 px against 9.5 at 700.
+  {tag: tags.heading1, fontWeight: '650'},
+  {tag: tags.heading2, fontWeight: '650'},
+  {tag: tags.heading3, fontWeight: '650'},
+  {tag: tags.heading4, fontWeight: '650'},
+  {tag: tags.heading5, fontWeight: '650'},
+  {tag: tags.heading6, fontWeight: '650'},
+  {tag: tags.strong, fontWeight: '650'},
   {tag: tags.emphasis, fontStyle: 'italic'},
   {tag: tags.strikethrough, textDecoration: 'line-through'},
   {tag: tags.processingInstruction, class: 'dw-mark'},   // #, *, **, ~~, `, [, ], (, ), >
