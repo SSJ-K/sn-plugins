@@ -7,7 +7,7 @@ import {I} from './icons';
 import {
   headingLevelAtCursor, setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote,
   toggleNumbered, insertLink, toggleCodeBlock, insertTable, insertDivider, clearFormatting,
-  headings, jumpTo
+  headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek
 } from './commands';
 import {setFindQuery, findNext, countMatches, findQueryField} from './find';
 
@@ -26,6 +26,7 @@ interface Tool {
   label: string;
   title: string;
   icon?: () => any;
+  text?: string;        // text button instead of an icon
   run: () => any;
   active?: boolean;
   picker?: boolean;     // the heading picker, wider than a button
@@ -72,6 +73,8 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   const tools: Tool[] = [
     {key: 'toc', group: 0, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
     {key: 'heading', group: 2, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
+    {key: 'cw', group: 9, label: 'Insert calendar week', title: 'Insert calendar week, Sunday start (Cmd+Shift+W)', text: calendarWeek(), run: () => insertCalendarWeek(view)},
+    {key: 'date', group: 9, label: 'Insert today', title: 'Insert today as MM/DD/YYYY (Cmd+Shift+D)', text: 'Date', run: () => insertToday(view)},
     {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
     {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
     {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
@@ -103,7 +106,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
       const gap = parseFloat(cs.getPropertyValue('--dw-gap')) || 4;
       const avail = el.clientWidth - 16; // row padding
       const sepW = 9 + gap;
-      const widths = tools.map((t, i) => (t.picker ? btn + 12 : btn) + gap + (i > 0 && t.group !== tools[i - 1].group ? sepW : 0));
+      const widths = tools.map((t, i) => (t.picker ? btn + 12 : t.text ? btn + 16 : btn) + gap + (i > 0 && t.group !== tools[i - 1].group ? sepW : 0));
       const all = widths.reduce((a, w) => a + w, 0);
       if (all <= avail) { setVisible(tools.length); return; }
       const moreW = sepW + btn + gap;
@@ -125,8 +128,8 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   const hidden = tools.slice(visible);
 
   const btn = (t: Tool) => (
-    <button key={t.key} type="button" className={'dw-btn' + (t.active ? ' dw-active' : '')} title={t.title} aria-label={t.title}
-            onMouseDown={keep} onClick={t.run}><t.icon/></button>
+    <button key={t.key} type="button" className={'dw-btn' + (t.active ? ' dw-active' : '') + (t.text ? ' dw-btn-text' : '')} title={t.title} aria-label={t.title}
+            onMouseDown={keep} onClick={t.run}>{t.text ? t.text : <t.icon/>}</button>
   );
 
   const picker = (
@@ -173,7 +176,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
             <div key={t.key} className="dw-menu-item dw-menu-picker">{picker}<span>Text style</span></div>
           ) : (
             <button key={t.key} type="button" className={'dw-menu-item' + (t.active ? ' dw-active' : '')}
-                    onClick={() => { setMoreOpen(false); t.run(); }}><t.icon/><span>{t.label}</span></button>
+                    onClick={() => { setMoreOpen(false); t.run(); }}>{t.text ? <b>{t.text}</b> : <t.icon/>}<span>{t.label}</span></button>
           ))}
         </div>
       )}

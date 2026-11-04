@@ -261,3 +261,31 @@ export function jumpTo(view: EditorView, pos: number) {
   view.dispatch({selection: EditorSelection.cursor(pos), effects: EditorView.scrollIntoView(pos, {y: 'start', yMargin: 24})});
   view.focus();
 }
+
+/** Calendar week, Sunday start, week 1 holds January 1 (K's convention): "CW45". */
+export function calendarWeek(d = new Date()): string {
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const sundayBefore = new Date(jan1); sundayBefore.setDate(jan1.getDate() - jan1.getDay());
+  const days = Math.floor((d.getTime() - sundayBefore.getTime()) / 86400000);
+  return 'CW' + String(Math.floor(days / 7) + 1).padStart(2, '0');
+}
+
+/** Today as MM/DD/YYYY. */
+export function todayMDY(d = new Date()): string {
+  return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear();
+}
+
+function insertAtCursor(view: EditorView, text: string) {
+  const r = view.state.selection.main;
+  view.dispatch({changes: {from: r.from, to: r.to, insert: text}, selection: EditorSelection.cursor(r.from + text.length), scrollIntoView: true});
+  view.focus();
+  return true;
+}
+export const insertCalendarWeek = (view: EditorView) => insertAtCursor(view, calendarWeek());
+export const insertToday = (view: EditorView) => insertAtCursor(view, todayMDY());
+
+// Self-check of the week rule against known dates (runs once at load, console only).
+if (typeof console !== 'undefined') {
+  const cases: [number, number, number, string][] = [[2026, 0, 1, 'CW01'], [2026, 0, 3, 'CW01'], [2026, 0, 4, 'CW02'], [2026, 10, 4, 'CW45'], [2025, 11, 31, 'CW53']];
+  for (const [y, m, d, want] of cases) { const got = calendarWeek(new Date(y, m, d)); if (got !== want) console.error('calendarWeek self-check failed', y, m + 1, d, got, want); }
+}

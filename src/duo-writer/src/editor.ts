@@ -7,7 +7,7 @@ import {defaultKeymap, history, historyKeymap, undo, redo} from '@codemirror/com
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
 import {tags} from '@lezer/highlight';
-import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock} from './commands';
+import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock, insertCalendarWeek, insertToday} from './commands';
 import {findExtension} from './find';
 import {marksExtension, setHideMarks, layoutExtension} from './marks';
 import {highlightExtension} from './highlight';
@@ -73,7 +73,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Alt-=', run: () => { hooks.onSizeStep?.(1); return true; }},
     {key: 'Mod-Alt--', run: () => { hooks.onSizeStep?.(-1); return true; }},
     {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }},
-    {key: 'Mod-r', run: () => { hooks.onTogglePreview?.(); return true; }}
+    {key: 'Mod-r', run: () => { hooks.onTogglePreview?.(); return true; }},
+    {key: 'Mod-Shift-w', run: insertCalendarWeek},
+    {key: 'Mod-Shift-d', run: insertToday}
   ]);
 
   const state = EditorState.create({
