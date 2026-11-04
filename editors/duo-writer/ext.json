@@ -3,9 +3,9 @@
   "name": "Duo Writer",
   "content_type": "SN|Component",
   "area": "editor-editor",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Markdown editor in the iA Writer style, with the Duo S typeface.",
-  "url": "https://ssj-k.github.io/sn-plugins/editors/duo-writer/index.html?v=0.8.1",
-  "download_url": "https://ssj-k.github.io/sn-plugins/editors/duo-writer/duo-writer-0.8.1.zip",
+  "url": "https://ssj-k.github.io/sn-plugins/editors/duo-writer/index.html?v=0.8.2",
+  "download_url": "https://ssj-k.github.io/sn-plugins/editors/duo-writer/duo-writer-0.8.2.zip",
   "latest_url": "https://ssj-k.github.io/sn-plugins/editors/duo-writer/ext.json"
 }

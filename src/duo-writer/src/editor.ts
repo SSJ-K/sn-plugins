@@ -121,6 +121,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   });
 
   const view = new EditorView({state, parent});
+  // iPad: back from the background, the editor can still count as focused yet ignore taps (no caret until
+  // the frame reloads). Letting go of focus while hidden makes the next tap focus afresh. Inferred, K tests it.
+  document.addEventListener('visibilitychange', () => { if (document.hidden) view.contentDOM.blur(); });
 
   return {
     view,
