@@ -117,7 +117,10 @@ function layout(view: EditorView): DecorationSet {
         if (isHeading) {
           // Hanging only while the marks are drawn; hidden marks leave the text flush.
           const marksDrawn = !hide || active.has(line.number);
-          if (marksDrawn && hangHeadings) items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `text-indent:-${mark.length}ch`}})});
+          // Hang no more than the side margin holds (4.5ch, less a character of air): H1 to H3
+          // hang fully; H4 to H6 hang the first three marks and keep the rest inline, as iA does.
+          const hang = Math.min(mark.length, 3);
+          if (marksDrawn && hangHeadings) items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `text-indent:-${hang}ch`}})});
         } else {
           const w = indent + mark.length;
           items.push({from: line.from, to: line.from, deco: Decoration.line({attributes: {style: `padding-left:${w}ch;text-indent:-${w}ch`}})});
