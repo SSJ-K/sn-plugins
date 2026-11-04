@@ -127,7 +127,7 @@ html, body {
   height: var(--dw-btn);
   padding: 0;
   font: inherit;
-  color: var(--dw-muted);
+  color: #555;
   background: transparent;
   border: 0;
   border-radius: 7px;
@@ -135,7 +135,7 @@ html, body {
   transition: background-color 120ms ease, color 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
-.dw-btn svg { width: 20px; height: 20px; }
+.dw-btn svg { width: 21px; height: 21px; }
 .dw-btn:hover { background: rgba(0, 0, 0, 0.06); color: var(--dw-fg); }
 .dw-btn:active { background: rgba(0, 0, 0, 0.1); color: var(--dw-fg); }
 .dw-btn.dw-active { background: rgba(0, 0, 0, 0.08); color: var(--dw-fg); }
