@@ -104,6 +104,25 @@ const App = () => {
     editorRef.current = editor;
     setReady(true);
     if (snApi.extensionMeta?.previewNotes?.[noteId()] === true) setPreviewMode(true, false);
+    // TEMPORARY (0.8.3): status line for the iPad first-open freeze (K's screenshots); remove with the fix.
+    const diag = document.createElement('div');
+    diag.style.cssText = 'position:fixed;left:8px;bottom:6px;z-index:10;pointer-events:none;font:11px/1.3 -apple-system,system-ui,sans-serif;color:#888';
+    document.body.appendChild(diag);
+    const t0 = Date.now();
+    let taps = 0, kind = '-';
+    const yn = (b: boolean) => b ? 'Y' : 'N';
+    const show = () => {
+      const cd = editor.view.contentDOM, a = document.activeElement, s = window.getSelection();
+      diag.textContent = `diag 0.8.3 · t ${Math.round((Date.now() - t0) / 1000)}s · page ${yn(document.hasFocus())} · editor ${yn(editor.view.hasFocus)}` +
+        ` · active ${a ? a.tagName + (a.className ? '.' + String(a.className).split(' ')[0] : '') : '-'} · ${document.visibilityState}` +
+        ` · taps ${taps} (${kind}) · domSel ${yn(!!s && s.rangeCount > 0 && cd.contains(s.anchorNode))} · editable ${cd.contentEditable}`;
+    };
+    document.addEventListener('pointerdown', (e) => { if (editor.view.contentDOM.contains(e.target as Node)) { taps++; kind = e.pointerType; } show(); }, true);
+    for (const type of ['pointerup', 'focusin', 'focusout', 'visibilitychange', 'selectionchange']) document.addEventListener(type, show, true);
+    window.addEventListener('focus', show);
+    window.addEventListener('blur', show);
+    setInterval(show, 1000);
+    show();
     const unsubscribe = snApi.subscribe(() => {
       editor.setText(snApi.text ?? '');
       editor.setLocked(!!snApi.locked);
