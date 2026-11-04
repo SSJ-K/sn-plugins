@@ -65,7 +65,10 @@ module.exports = (env, argv) => ({
       patterns: [
         {
           from: 'public',
-          transform(content) {
+          // Version substitution for the JSON descriptors only. Binary files (fonts)
+          // must pass through untouched: a text round-trip corrupts them.
+          transform(content, absoluteFrom) {
+            if (!absoluteFrom.endsWith('.json')) return content;
             return content.toString().split('$VERSION$').join(version);
           }
         },

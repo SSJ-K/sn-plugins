@@ -32,6 +32,25 @@
   src: local('iA Writer Duo S Bold Italic'), local('iAWriterDuoS-BoldItalic'), url('fonts/iAWriterDuoS-BoldItalic.woff2') format('woff2');
 }
 
+/* Variable Duo (public iA-Fonts repo, SIL OFL 1.1): weight 400 to 700 and a spacing axis.
+   iA's app draws body text heavier and a little looser than the static Duo S cut
+   (measured 2026-11-03: stroke 0.122 em against 0.114, glyph-to-advance 0.89 against 0.95);
+   weight 450, iA's own "Text" instance, with spacing 20 reproduces both. */
+@font-face {
+  font-family: 'iA Writer Duo V';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('fonts/iAWriterDuoV.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'iA Writer Duo V';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('fonts/iAWriterDuoV-Italic.woff2') format('woff2');
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -234,7 +253,7 @@ html, body {
 .dw-link { color: var(--dw-fg); text-decoration: none; }
 .dw-linkmark { color: var(--dw-faint); font-weight: normal; }
 .dw-url { color: var(--dw-faint); text-decoration: underline; text-underline-offset: 3px; }
-.dw-code { font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace; background: var(--dw-codebg); border-radius: 3px; padding: 0.1em 0; }
+.dw-code { font-family: inherit; background: var(--dw-codebg); border-radius: 3px; padding: 0.1em 0; }
 .dw-quote { color: var(--dw-fg); font-style: normal; }              /* iA: quote text plain */
 .dw-quotemark { color: var(--dw-fg); }
 .dw-rule { color: var(--dw-mark); }
@@ -243,26 +262,26 @@ html, body {
 /* The generic grey span nests inside the specific ones; the specific wins. */
 .dw-hashmark .dw-mark, .dw-strongmark .dw-mark, .dw-linkmark .dw-mark, .dw-listmark .dw-mark, .dw-quotemark .dw-mark { color: inherit; font-weight: inherit; }
 
+/* Text size by frame width, as iA Writer does (measured on the iPhone Duo). Sizes are
+   6 percent under the earlier static-font values and line heights 6.6 percent over them,
+   so letters per line and line pitch stay exactly where they were measured (spacing 20
+   widens every advance from 0.60 em to 0.64 em). Columns and margins use ch so they
+   follow the advance, not the em. */
 .cm-editor {
   height: 100%;
-  font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace;
-  font-size: calc(15px * var(--dw-scale, 1)); /* --dw-scale: the user's size steps, 1.1 per step; 15 px lands on iA's 14.6 pt in a split pane */
-  line-height: 1.6;
+  font-family: 'iA Writer Duo V', 'iA Writer Duo S', ui-monospace, Menlo, monospace;
+  font-weight: 450;
+  font-variation-settings: 'SPCG' 20;
+  font-size: calc(14.1px * var(--dw-scale, 1)); /* --dw-scale: the user's size steps, 1.1 per step */
+  line-height: 1.705;
   background-color: transparent;
 }
 @media (min-width: 520px) {
-  .cm-editor { font-size: calc(16px * var(--dw-scale, 1)); line-height: 1.65; }
+  .cm-editor { font-size: calc(15px * var(--dw-scale, 1)); line-height: 1.76; }
 }
 @media (min-width: 900px) {
-  .cm-editor { font-size: calc(18px * var(--dw-scale, 1)); }
+  .cm-editor { font-size: calc(16.9px * var(--dw-scale, 1)); }
 }
-/* Phones only (touch screen narrower than 900 pt): 50 characters, iA's effective width there.
-   Keyed to the device, so a narrow Mac pane keeps 64; an iPad in landscape (900 pt and wider)
-   keeps 64 too, in portrait it gets 50, matching iA's "lines wrap sooner on a narrow screen". */
-@media (hover: none) and (max-width: 899px) {
-  .cm-editor .cm-content { max-width: 35.4em; }
-}
-
 .cm-editor.cm-focused {
   outline: none;
 }
@@ -280,12 +299,19 @@ html, body {
   flex-grow: 0;
   flex-shrink: 1;
   width: 100%;
-  max-width: 43.8em; /* 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
+  max-width: 73ch; /* 64 characters of text (iA's smallest line-length setting) plus 4.5 ch (2.7 em at the old advance) each side */
   box-sizing: border-box;
   margin: 0;
-  padding: 3.3em 2.7em 50vh 2.7em; /* iA Writer: 130 px side margin, 4.3 em from chrome to first ink */
+  padding: 3.5em 4.5ch 50vh 4.5ch; /* iA Writer: 130 px side margin, 4.3 em from chrome to first ink (old em) */
   caret-color: var(--sn-stylekit-foreground-color, #1a1a1a);
 }
+/* Phones only (touch screen narrower than 900 pt): 50 characters, iA's effective width there.
+   Keyed to the device, so a narrow Mac pane keeps 64; an iPad in landscape (900 pt and wider)
+   keeps 64 too, in portrait it gets 50, matching iA's "lines wrap sooner on a narrow screen". */
+@media (hover: none) and (max-width: 899px) {
+  .cm-editor .cm-content { max-width: 59ch; }
+}
+
 
 .cm-editor .cm-line {
   padding: 0;
