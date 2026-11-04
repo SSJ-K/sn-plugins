@@ -126,6 +126,21 @@ function layout(view: EditorView): DecorationSet {
       pos = line.to + 1;
     }
   }
+  // Fenced code blocks: one grey box around the fence lines (iA: #f0f0f0, no vertical
+  // padding, one-character overhang left and right, 0.17 em corners).
+  syntaxTree(state).iterate({
+    from: view.visibleRanges[0]?.from ?? 0,
+    to: view.visibleRanges[view.visibleRanges.length - 1]?.to ?? 0,
+    enter(node) {
+      if (node.name !== 'FencedCode') return;
+      const first = state.doc.lineAt(node.from).number, last = state.doc.lineAt(node.to).number;
+      for (let n = first; n <= last; n++) {
+        const line = state.doc.line(n);
+        const cls = 'dw-codeblock' + (n === first ? ' dw-codeblock-first' : '') + (n === last ? ' dw-codeblock-last' : '');
+        items.push({from: line.from, to: line.from, deco: Decoration.line({class: cls})});
+      }
+    }
+  });
   // Done checklist items: strike the text after "[x] ".
   syntaxTree(state).iterate({
     from: view.visibleRanges[0]?.from ?? 0,

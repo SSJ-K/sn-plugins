@@ -261,6 +261,11 @@ html, body {
 .dw-rule { color: var(--dw-mark); }
 .dw-done { color: var(--dw-faint); text-decoration: line-through; }
 .dw-task { cursor: pointer; }
+/* Fenced code block box, measured from iA's editor (round 8). */
+.cm-editor .cm-line.dw-codeblock { background: var(--dw-codebg); margin-left: -1ch; margin-right: -1ch; padding-left: 1ch; padding-right: 1ch; }
+.cm-editor .cm-line.dw-codeblock-first { border-top-left-radius: 0.17em; border-top-right-radius: 0.17em; }
+.cm-editor .cm-line.dw-codeblock-last { border-bottom-left-radius: 0.17em; border-bottom-right-radius: 0.17em; }
+.cm-editor .cm-line.dw-codeblock .dw-code { background: transparent; padding: 0; }
 /* The generic grey span nests inside the specific ones; the specific wins. */
 .dw-hashmark .dw-mark, .dw-strongmark .dw-mark, .dw-linkmark .dw-mark, .dw-listmark .dw-mark, .dw-quotemark .dw-mark { color: inherit; font-weight: inherit; }
 
