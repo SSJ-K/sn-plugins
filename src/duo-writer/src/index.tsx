@@ -1,6 +1,6 @@
 // Duo Writer entry: tools row (shown by default) above the CodeMirror
 // writing surface, wired to Standard Notes through sn-extension-api.
-// Two per-user switches live in the plugin's own settings: toolbar, hideMarks.
+// The plugin's own settings (synced, never the note) hold toolbar, hideMarks, sizeSteps and previewNotes.
 import './index.css';
 import React, {useEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -16,6 +16,10 @@ type Editor = ReturnType<typeof createEditor>;
 type ScreenClass = 'narrow' | 'medium' | 'wide';
 const screenClass = (): ScreenClass => window.innerWidth < 520 ? 'narrow' : window.innerWidth < 900 ? 'medium' : 'wide';
 const MIN_STEP = -3, MAX_STEP = 6; // iA has 12 sizes; each step here is 10 percent
+
+// shortcut: sn-extension-api 0.4 keeps the note's id in a private field; if an upgrade renames it,
+// preview memory stops working (notes open in edit mode) and needs the new name.
+const noteId = (): string | undefined => (snApi as any).lastStreamedItem?.uuid;
 
 const App = () => {
   const host = useRef<HTMLDivElement>(null);
@@ -62,12 +66,19 @@ const App = () => {
     remember({sizeSteps: all});
   };
 
-  // Preview mode is remembered per note in the note's plugin metadata (synced with the note).
+  // Preview mode is remembered per note in the plugin's settings, listing only the notes left in preview.
+  // Not in the note: the app counts every plugin save to a note as an edit and moves its modified date.
+  // shortcut: entries for deleted notes stay in the list; prune them if it ever grows long.
   const setPreviewMode = (next: boolean, persist: boolean) => {
     if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
     setPreview(next);
     if (!next) setTimeout(() => editorRef.current?.view.focus(), 0);
-    if (persist) snApi.meta = {...(snApi.meta || {}), preview: next};
+    const id = noteId();
+    if (persist && id) {
+      const notes = {...(snApi.extensionMeta?.previewNotes || {})};
+      if (next) notes[id] = true; else delete notes[id];
+      remember({previewNotes: notes});
+    }
   };
   const togglePreview = () => setPreviewMode(!previewRef.current, true);
 
@@ -92,7 +103,7 @@ const App = () => {
     editor.setHideMarks(hideMarksRef.current);
     editorRef.current = editor;
     setReady(true);
-    if (snApi.meta?.preview === true) setPreviewMode(true, false);
+    if (snApi.extensionMeta?.previewNotes?.[noteId()] === true) setPreviewMode(true, false);
     const unsubscribe = snApi.subscribe(() => {
       editor.setText(snApi.text ?? '');
       editor.setLocked(!!snApi.locked);
