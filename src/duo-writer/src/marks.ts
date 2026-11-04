@@ -89,6 +89,7 @@ export const marksExtension = [hideMarksField, hider];
 // left edge; list and quote continuation lines align with their text.
 const LINE_START = /^(\s*)(#{1,6} |[-*+] (?:\[[ xX]\] )?|\d+\. |> )/;
 const doneMark = Decoration.mark({class: 'dw-done'});
+const taskMark = Decoration.mark({class: 'dw-task'});
 
 function layout(view: EditorView): DecorationSet {
   const {state} = view;
@@ -129,10 +130,11 @@ function layout(view: EditorView): DecorationSet {
       const marker = node.node.getChild('TaskMarker');
       if (!marker) return;
       const txt = state.sliceDoc(marker.from, marker.to);
+      items.push({from: marker.from, to: marker.to, deco: taskMark});
       if (/x/i.test(txt) && marker.to < node.to) items.push({from: marker.to, to: node.to, deco: doneMark});
     }
   });
-  items.sort((a, c) => a.from - c.from || a.to - c.to || (a.deco.spec.attributes ? -1 : 1));
+  items.sort((a, c) => a.from - c.from || (a.deco.spec.attributes ? -1 : c.deco.spec.attributes ? 1 : 0) || a.to - c.to);
   for (const it of items) b.add(it.from, it.to, it.deco);
   return b.finish();
 }
@@ -147,4 +149,25 @@ const layoutPlugin = ViewPlugin.fromClass(class {
   }
 }, {decorations: v => v.decorations});
 
-export const layoutExtension = [layoutPlugin];
+
+// ---- Click or tap on a task marker toggles [ ] and [x] -------------------
+const TASK_AT = /^(\s*[-*+] )\[( |x|X)\]/;
+export const taskClick = EditorView.domEventHandlers({
+  mousedown(event, view) {
+    if (event.button !== 0) return false;
+    const pos = view.posAtCoords({x: event.clientX, y: event.clientY});
+    if (pos == null) return false;
+    const line = view.state.doc.lineAt(pos);
+    const m = TASK_AT.exec(line.text);
+    if (!m) return false;
+    const markFrom = line.from + m[1].length, markTo = markFrom + 3;
+    // Accept a hit on the bullet or the box itself, not on the text after it.
+    if (pos < line.from || pos > markTo) return false;
+    const done = m[2] !== ' ';
+    view.dispatch({changes: {from: markFrom, to: markTo, insert: done ? '[ ]' : '[x]'}});
+    event.preventDefault();
+    return true;
+  }
+});
+
+export const layoutExtension = [layoutPlugin, taskClick];

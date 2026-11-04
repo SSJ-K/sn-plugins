@@ -201,6 +201,7 @@ html, body {
 .dw-url { color: var(--dw-mark); }
 .dw-code { font-family: 'iA Writer Duo S', ui-monospace, Menlo, monospace; background: var(--sn-stylekit-contrast-background-color, #f2f2f2); border-radius: 3px; padding: 0.1em 0; }
 .dw-done { color: var(--dw-mark); text-decoration: line-through; }
+.dw-task { cursor: pointer; }
 .dw-quote { color: var(--dw-muted); font-style: italic; }
 .dw-rule { color: var(--dw-mark); }
 

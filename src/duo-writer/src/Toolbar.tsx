@@ -70,6 +70,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
 
   // Priority order: most used first. Everything after what fits goes under "more".
   const tools: Tool[] = [
+    {key: 'toc', group: 0, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
     {key: 'heading', group: 2, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
     {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
     {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
@@ -86,7 +87,6 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
     {key: 'codeblock', group: 6, label: 'Code block', title: 'Code block (Cmd+Shift+C)', icon: I.codeBlock, run: () => toggleCodeBlock(view)},
     {key: 'table', group: 6, label: 'Table', title: 'Insert table', icon: I.table, run: () => insertTable(view)},
     {key: 'divider', group: 6, label: 'Divider', title: 'Insert divider', icon: I.divider, run: () => insertDivider(view)},
-    {key: 'toc', group: 7, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
     {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)},
     {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+Option+=)', icon: I.textBigger, run: () => onSizeStep(1)},
     {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+Option+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
