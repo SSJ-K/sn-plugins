@@ -44,6 +44,23 @@ export interface EditorHooks {
   onTogglePreview?: () => void; // Cmd+Option+P (iA's Cmd+R is the desktop app's Reload)
 }
 
+/** The part of `current` that differs from `text`, so the cursor and earlier undo steps keep their places. */
+function changedPart(current: string, text: string) {
+  const max = Math.min(current.length, text.length);
+  let head = 0, tail = 0;
+  while (head < max && current.charCodeAt(head) === text.charCodeAt(head)) head++;
+  while (tail < max - head && current.charCodeAt(current.length - 1 - tail) === text.charCodeAt(text.length - 1 - tail)) tail++;
+  return {from: head, to: current.length - tail, insert: text.slice(head, text.length - tail)};
+}
+
+// Self-check of the synced-text replacement (runs once at load, console only): applying it must give the new text.
+if (typeof console !== 'undefined') {
+  for (const [a, b] of [['abc', 'abc!'], ['abc', 'ac'], ['aa', 'aaa'], ['', 'new'], ['old', ''], ['a b a', 'a c a']]) {
+    const c = changedPart(a, b);
+    if (a.slice(0, c.from) + c.insert + a.slice(c.to) !== b) console.error('changedPart self-check failed', a, b, c);
+  }
+}
+
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
   const editable = new Compartment();
   let applyingExternal = false;
@@ -123,7 +140,8 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   const view = new EditorView({state, parent});
   // iPad: back from the background, the editor can still count as focused yet ignore taps (no caret until
   // the frame reloads). Letting go of focus while hidden makes the next tap focus afresh. Inferred, K tests it.
-  document.addEventListener('visibilitychange', () => { if (document.hidden) view.contentDOM.blur(); });
+  // Touch screens only (an iPad with a trackpad still reports touch); a covered Mac window keeps its caret.
+  document.addEventListener('visibilitychange', () => { if (document.hidden && navigator.maxTouchPoints > 0) view.contentDOM.blur(); });
 
   return {
     view,
@@ -132,17 +150,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     setText(text: string) {
       const current = view.state.doc.toString();
       if (current === text) return;
-      // Replace only the part that differs, so the cursor and earlier undo steps keep their places.
-      const max = Math.min(current.length, text.length);
-      let head = 0, tail = 0;
-      while (head < max && current.charCodeAt(head) === text.charCodeAt(head)) head++;
-      while (tail < max - head && current.charCodeAt(current.length - 1 - tail) === text.charCodeAt(text.length - 1 - tail)) tail++;
       applyingExternal = true;
       // Synced text from another device is not undoable here: Cmd+Z must never erase someone else's edit.
-      view.dispatch({
-        changes: {from: head, to: current.length - tail, insert: text.slice(head, text.length - tail)},
-        annotations: Transaction.addToHistory.of(false)
-      });
+      view.dispatch({changes: changedPart(current, text), annotations: Transaction.addToHistory.of(false)});
       applyingExternal = false;
     },
     setLocked(next: boolean) {
