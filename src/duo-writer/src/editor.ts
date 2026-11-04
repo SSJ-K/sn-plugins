@@ -10,6 +10,7 @@ import {tags} from '@lezer/highlight';
 import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock} from './commands';
 import {findExtension} from './find';
 import {marksExtension, setHideMarks, layoutExtension} from './marks';
+import {highlightExtension} from './highlight';
 
 const duoStyle = HighlightStyle.define([
   // iA Writer draws headings at body size, with the # marks hanging in the margin.
@@ -39,7 +40,8 @@ export interface EditorHooks {
   onFind?: () => void;        // Cmd+F: focus the find field
   onToggleTools?: () => void; // Cmd+.: show or hide the tools row
   onToggleMarks?: () => void; // Cmd+Shift+.: show or hide the marks
-  onSizeStep?: (delta: number) => void; // Cmd+Option+= bigger, Cmd+Option+- smaller, Cmd+Option+0 reset
+  onSizeStep?: (delta: number) => void;
+  onTogglePreview?: () => void; // Cmd+R, as in iA Writer // Cmd+Option+= bigger, Cmd+Option+- smaller, Cmd+Option+0 reset
 }
 
 export function createEditor(parent: HTMLElement, initialText: string, hooks: EditorHooks) {
@@ -70,7 +72,8 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     // Cmd+= / Cmd+- / Cmd+0 belong to the desktop app's window zoom; Option keeps ours separate.
     {key: 'Mod-Alt-=', run: () => { hooks.onSizeStep?.(1); return true; }},
     {key: 'Mod-Alt--', run: () => { hooks.onSizeStep?.(-1); return true; }},
-    {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }}
+    {key: 'Mod-Alt-0', run: () => { hooks.onSizeStep?.(0); return true; }},
+    {key: 'Mod-r', run: () => { hooks.onTogglePreview?.(); return true; }}
   ]);
 
   const state = EditorState.create({
@@ -84,6 +87,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       findExtension,
       marksExtension,
       layoutExtension,
+      highlightExtension,
       toolKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       editable.of(EditorView.editable.of(true)),

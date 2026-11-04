@@ -8,6 +8,7 @@ import snApi from 'sn-extension-api';
 import {createEditor} from './editor';
 import Toolbar from './Toolbar';
 import {I} from './icons';
+import {renderPreview} from './preview';
 
 type Editor = ReturnType<typeof createEditor>;
 
@@ -23,6 +24,10 @@ const App = () => {
   const [toolsOpen, setToolsOpen] = useState<boolean>(snApi.extensionMeta?.toolbar !== false);
   const [hideMarks, setHideMarks] = useState<boolean>(snApi.extensionMeta?.hideMarks === true);
   const [selectionTick, setSelectionTick] = useState(0);
+  const [preview, setPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const previewRef = useRef(false);
+  previewRef.current = preview;
   const [sizeSteps, setSizeSteps] = useState<Record<string, number>>(snApi.extensionMeta?.sizeSteps || {});
   const [screen, setScreen] = useState<ScreenClass>(screenClass());
   const sizeStepsRef = useRef(sizeSteps);
@@ -57,6 +62,13 @@ const App = () => {
     remember({sizeSteps: all});
   };
 
+  const togglePreview = () => {
+    const next = !previewRef.current;
+    if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
+    setPreview(next);
+    if (!next) setTimeout(() => editorRef.current?.view.focus(), 0);
+  };
+
   useEffect(() => {
     const onResize = () => setScreen(screenClass());
     window.addEventListener('resize', onResize);
@@ -71,7 +83,8 @@ const App = () => {
       onFind: () => { if (!toolsOpenRef.current) toggleTools(); setFindFocusTick(t => t + 1); },
       onToggleTools: toggleTools,
       onToggleMarks: toggleMarks,
-      onSizeStep: sizeStep
+      onSizeStep: sizeStep,
+      onTogglePreview: togglePreview
     });
     editor.setLocked(!!snApi.locked);
     editor.setHideMarks(hideMarksRef.current);
@@ -90,6 +103,9 @@ const App = () => {
   return (
     <div className={'dw-app' + (toolsOpen ? ' dw-tools-open' : '')} style={{'--dw-scale': String(scale)} as any}>
       <div className="dw-corner">
+        <button type="button" className={'dw-btn dw-play' + (preview ? ' dw-play-on' : '')}
+                title={preview ? 'Back to editing (Cmd+R)' : 'Preview (Cmd+R)'} aria-label="Preview"
+                onMouseDown={(e) => e.preventDefault()} onClick={togglePreview}>{preview ? <I.edit/> : <I.play/>}</button>
         <button type="button" className={'dw-btn' + (hideMarks ? ' dw-active' : '')}
                 title={hideMarks ? 'Show Markdown marks (Cmd+Shift+.)' : 'Hide Markdown marks off the current line (Cmd+Shift+.)'}
                 aria-label="Show or hide Markdown marks" onMouseDown={(e) => e.preventDefault()} onClick={toggleMarks}>
@@ -99,11 +115,12 @@ const App = () => {
                 title={toolsOpen ? 'Hide tools (Cmd+.)' : 'Show tools (Cmd+.)'}
                 aria-label="Show or hide tools" onMouseDown={(e) => e.preventDefault()} onClick={toggleTools}><I.tools/></button>
       </div>
-      {ready && toolsOpen && (
+      {ready && toolsOpen && !preview && (
         <Toolbar view={editorRef.current.view} undo={editorRef.current.undo} redo={editorRef.current.redo}
                  selectionTick={selectionTick} findFocusTick={findFocusTick} onSizeStep={sizeStep}/>
       )}
-      <div className="dw-host" ref={host}/>
+      <div className="dw-host" ref={host} hidden={preview}/>
+      {preview && <div className="dw-preview"><div className="dw-preview-page" dangerouslySetInnerHTML={{__html: previewHtml}}/></div>}
     </div>
   );
 };
