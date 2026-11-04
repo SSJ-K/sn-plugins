@@ -256,9 +256,10 @@ html, body {
 @media (min-width: 900px) {
   .cm-editor { font-size: calc(18px * var(--dw-scale, 1)); }
 }
-/* Touch screens only (phone, tablet): 50 characters, iA's effective width on the phone.
-   Keyed to the device, not the pane width, so a narrow Mac pane keeps the 64-character column. */
-@media (hover: none) {
+/* Phones only (touch screen narrower than 900 pt): 50 characters, iA's effective width there.
+   Keyed to the device, so a narrow Mac pane keeps 64; an iPad in landscape (900 pt and wider)
+   keeps 64 too, in portrait it gets 50, matching iA's "lines wrap sooner on a narrow screen". */
+@media (hover: none) and (max-width: 899px) {
   .cm-editor .cm-content { max-width: 35.4em; }
 }
 
