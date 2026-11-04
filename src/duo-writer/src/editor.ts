@@ -110,20 +110,6 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     return true;
   });
 
-  // iPad after a cold start behind Face ID (K's 0.8.3 status line): a tap puts the iPad's own selection in the
-  // text but the editor is never told it has focus (no caret, typing lost), while a tools-row button, which
-  // focuses in code, fixes it. So a release in the text while the editor is not focused focuses it in code,
-  // at the tapped spot. When it is focused this does nothing, so drag and double-tap selection are untouched.
-  const focusOnTap = EditorView.domEventHandlers({
-    pointerup(e, v) {
-      if (v.dom.classList.contains('cm-focused')) return false;
-      const pos = v.posAtCoords({x: e.clientX, y: e.clientY});
-      if (pos != null) v.dispatch({selection: {anchor: pos}});
-      v.focus();
-      return false;
-    }
-  });
-
   const state = EditorState.create({
     doc: initialText,
     extensions: [
@@ -133,7 +119,6 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       markdown({base: markdownLanguage}),
       syntaxHighlighting(duoStyle),
       wrapOnType,
-      focusOnTap,
       findExtension,
       marksExtension,
       layoutExtension,
@@ -153,6 +138,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   });
 
   const view = new EditorView({state, parent});
+  // Kept from 0.8.2/0.8.3, the last state in which a tools-row button woke the iPad editor after a cold start
+  // (0.8.4's tap-to-focus step made that stop working and was removed in 0.8.5). Touch screens only.
+  document.addEventListener('visibilitychange', () => { if (document.hidden && navigator.maxTouchPoints > 0) view.contentDOM.blur(); });
 
   return {
     view,
