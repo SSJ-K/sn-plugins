@@ -19,7 +19,7 @@ const MARK_NODES = new Set(['HeaderMark', 'EmphasisMark', 'StrikethroughMark', '
 
 const hidden = Decoration.replace({});
 
-function linesWithCursor(state: EditorState): Set<number> {
+export function linesWithCursor(state: EditorState): Set<number> {
   const s = new Set<number>();
   for (const r of state.selection.ranges) {
     const a = state.doc.lineAt(r.from).number, b = state.doc.lineAt(r.to).number;

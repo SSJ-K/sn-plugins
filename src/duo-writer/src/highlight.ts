@@ -3,23 +3,29 @@
 // greys the == marks (they stay visible; iA never hides marks).
 import {EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate} from '@codemirror/view';
 import {RangeSetBuilder} from '@codemirror/state';
+import {hideMarksField, linesWithCursor, setHideMarks} from './marks';
 
 const band = Decoration.mark({class: 'dw-hl'});
 const markDeco = Decoration.mark({class: 'dw-mark dw-hlmark'});
+const hiddenMark = Decoration.replace({});
 const RE = /==([^=\n]+?)==/g;
 
 function build(view: EditorView): DecorationSet {
   const b = new RangeSetBuilder<Decoration>();
   const items: {from: number; to: number; d: Decoration}[] = [];
+  // In hide-marks mode the == marks vanish off the cursor line, like every other mark.
+  const hide = view.state.field(hideMarksField);
+  const active = hide ? linesWithCursor(view.state) : null;
   for (const {from, to} of view.visibleRanges) {
     const text = view.state.sliceDoc(from, to);
     let m: RegExpExecArray | null;
     RE.lastIndex = 0;
     while ((m = RE.exec(text))) {
       const s = from + m.index;
-      items.push({from: s, to: s + 2, d: markDeco});
+      const deco = hide && !active.has(view.state.doc.lineAt(s).number) ? hiddenMark : markDeco;
+      items.push({from: s, to: s + 2, d: deco});
       items.push({from: s + 2, to: s + 2 + m[1].length, d: band});
-      items.push({from: s + 2 + m[1].length, to: s + m[0].length, d: markDeco});
+      items.push({from: s + 2 + m[1].length, to: s + m[0].length, d: deco});
     }
   }
   items.sort((a, c) => a.from - c.from);
@@ -30,5 +36,8 @@ function build(view: EditorView): DecorationSet {
 export const highlightExtension = ViewPlugin.fromClass(class {
   decorations: DecorationSet;
   constructor(view: EditorView) { this.decorations = build(view); }
-  update(u: ViewUpdate) { if (u.docChanged || u.viewportChanged) this.decorations = build(u.view); }
+  update(u: ViewUpdate) {
+    const toggled = u.transactions.some(tr => tr.effects.some(e => e.is(setHideMarks)));
+    if (u.docChanged || u.viewportChanged || u.selectionSet || toggled) this.decorations = build(u.view);
+  }
 }, {decorations: v => v.decorations});
