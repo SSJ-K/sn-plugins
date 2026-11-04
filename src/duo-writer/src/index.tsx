@@ -125,6 +125,32 @@ const App = () => {
   );
 };
 
+// Dark Standard Notes theme detection: the app injects the active theme's stylesheet into
+// this frame, which redefines --sn-stylekit-background-color. Dark background => dark palette.
+function syncThemeDarkness() {
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--sn-stylekit-background-color').trim();
+  const m = bg.match(/^#([0-9a-f]{3,8})$/i);
+  let dark = false;
+  if (m) {
+    let h = m[1]; if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    dark = (0.2126 * r + 0.7152 * g + 0.0722 * b) < 128;
+  } else if (/^rgb/.test(bg)) {
+    const n = bg.match(/\d+/g)?.map(Number) || [];
+    if (n.length >= 3) dark = (0.2126 * n[0] + 0.7152 * n[1] + 0.0722 * n[2]) < 128;
+  }
+  if (dark) document.documentElement.setAttribute('data-dw-dark', ''); else document.documentElement.removeAttribute('data-dw-dark');
+}
+syncThemeDarkness();
+// The injected theme is a <link>; its colours arrive when it finishes loading, after the
+// DOM change. Re-check on every stylesheet load and for a few seconds after any head change.
+const recheck = () => { syncThemeDarkness(); let n = 0; const t = setInterval(() => { syncThemeDarkness(); if (++n >= 20) clearInterval(t); }, 250); };
+new MutationObserver((muts) => {
+  recheck();
+  for (const m of muts) for (const node of Array.from(m.addedNodes)) if (node instanceof HTMLLinkElement) node.addEventListener('load', syncThemeDarkness);
+}).observe(document.head, {childList: true, subtree: true, attributes: true});
+window.addEventListener('load', recheck);
+
 const root = createRoot(document.getElementById('root'));
 let mounted = false;
 

@@ -61,6 +61,9 @@ html, body {
 @media (prefers-color-scheme: dark) {
   html, body { background-color: var(--sn-stylekit-background-color, #1b1b1b); color: var(--sn-stylekit-foreground-color, #e6e6e6); }
 }
+/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-stylekit-background-color, #1b1b1b); color: var(--sn-stylekit-foreground-color, #e6e6e6); }
+
 .dw-app { background: var(--dw-bg); color: var(--dw-fg); }
 
 #root {
@@ -105,6 +108,17 @@ html, body {
     --dw-caret: #00afe7;
   }
 }
+/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+[data-dw-dark] .dw-app { --dw-muted: var(--sn-stylekit-neutral-color, #9a9a9a);
+    --dw-mark: #8a8a8a;
+    --dw-faint: #6f6f6f;
+    --dw-listmark: #c8c8c8;
+    --dw-codebg: var(--sn-stylekit-contrast-background-color, #2a2a2a);
+    --dw-border: var(--sn-stylekit-border-color, #333);
+    --dw-fg: var(--sn-stylekit-foreground-color, #e6e6e6);
+    --dw-bg: var(--sn-stylekit-background-color, #1b1b1b);
+    --dw-caret: #00afe7; }
+
 
 .dw-host { flex: 1 1 auto; min-height: 0; }
 
@@ -165,6 +179,10 @@ html, body {
   .dw-btn:hover { background: rgba(255, 255, 255, 0.08); }
   .dw-btn:active, .dw-btn.dw-active { background: rgba(255, 255, 255, 0.12); }
 }
+/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+[data-dw-dark] .dw-btn:hover { background: rgba(255, 255, 255, 0.08); }
+[data-dw-dark] .dw-btn:active, [data-dw-dark]  .dw-btn.dw-active { background: rgba(255, 255, 255, 0.12); }
+
 
 .dw-sep { flex: 0 0 auto; width: 1px; height: 18px; background: var(--dw-border); margin: 0 2px; }
 
@@ -357,6 +375,9 @@ html, body {
 @media (min-width: 520px) { .dw-preview { font-size: calc(16px * var(--dw-scale, 1)); } }
 @media (min-width: 900px) { .dw-preview { font-size: calc(18px * var(--dw-scale, 1)); } }
 @media (prefers-color-scheme: dark) { .dw-preview { background: var(--dw-bg); color: var(--dw-fg); } }
+/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+[data-dw-dark] .dw-preview { background: var(--dw-bg); color: var(--dw-fg); }
+
 
 .dw-preview-page { max-width: 46em; margin: 0 auto; padding: 2.4em 1.2em 50vh 1.2em; /* iA preview margin in a split pane: 1.2 em */ letter-spacing: -0.02em; /* iA sets Plex 5 percent tighter than default: alphabet line 40.5 cap heights against Plex's 42.7 */ }
 .dw-preview-page > :first-child { margin-top: 0; }
@@ -406,3 +427,9 @@ html, body {
   .dw-preview hr, .dw-preview .footnotes { border-color: var(--dw-fg); }
   .dw-preview li.task-list-item input { border-color: var(--dw-fg); }
 }
+/* Same palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
+[data-dw-dark] .dw-preview code, [data-dw-dark]  .dw-preview pre { background: var(--dw-codebg); }
+[data-dw-dark] .dw-preview th, [data-dw-dark]  .dw-preview td { border-color: var(--dw-border); }
+[data-dw-dark] .dw-preview hr, [data-dw-dark]  .dw-preview .footnotes { border-color: var(--dw-fg); }
+[data-dw-dark] .dw-preview li.task-list-item input { border-color: var(--dw-fg); }
+
