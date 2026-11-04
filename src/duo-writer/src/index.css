@@ -255,7 +255,11 @@ html, body {
 }
 @media (min-width: 900px) {
   .cm-editor { font-size: calc(18px * var(--dw-scale, 1)); }
-  .cm-editor .cm-content { max-width: 43.8em; } /* Mac: 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
+}
+/* Touch screens only (phone, tablet): 50 characters, iA's effective width on the phone.
+   Keyed to the device, not the pane width, so a narrow Mac pane keeps the 64-character column. */
+@media (hover: none) {
+  .cm-editor .cm-content { max-width: 35.4em; }
 }
 
 .cm-editor.cm-focused {
@@ -275,7 +279,7 @@ html, body {
   flex-grow: 0;
   flex-shrink: 1;
   width: 100%;
-  max-width: 35.4em; /* phone: 30 em of text (50 characters, iA's effective width on the phone) plus 2.7 em each side */
+  max-width: 43.8em; /* 38.4 em of text (64 characters, iA's smallest line-length setting) plus 2.7 em each side */
   box-sizing: border-box;
   margin: 0;
   padding: 3.3em 2.7em 50vh 2.7em; /* iA Writer: 130 px side margin, 4.3 em from chrome to first ink */
