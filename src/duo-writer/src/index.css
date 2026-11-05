@@ -380,16 +380,18 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-preview-page { max-width: 46em; margin: 0 auto; padding: 2.4em 1.2em 50vh 1.2em; /* iA preview margin in a split pane: 1.2 em */ letter-spacing: -0.02em; /* iA sets Plex 5 percent tighter than default: alphabet line 40.5 cap heights against Plex's 42.7 */ }
 .dw-preview-page > :first-child { margin-top: 0; }
 .dw-preview p, .dw-preview li, .dw-preview td, .dw-preview th { overflow-wrap: anywhere; }
-.dw-preview p { margin: 0 0 1.45em 0; } /* paragraph gap measured 2.9 to 3.2 em top to top */
-.dw-preview h1, .dw-preview h2, .dw-preview h3, .dw-preview h4, .dw-preview h5 { text-align: center; font-weight: 700; line-height: 1.3; }
+/* No block margins: space comes only from the blank lines typed in the note, one line each (preview.ts; K, 2026-11-05).
+   Replaces the iA-measured gaps of 0.6.1. */
+.dw-preview p { margin: 0; }
+.dw-preview h1, .dw-preview h2, .dw-preview h3, .dw-preview h4, .dw-preview h5 { text-align: left; font-weight: 700; line-height: 1.3; } /* left like the editor, not iA's centred (K, 2026-11-05) */
 .dw-preview strong, .dw-preview b { font-weight: 700; }
-.dw-preview h1 { font-size: 1.28em; margin: 0 0 2.4em 0; } /* H1 top to body top 4.83 em */
-.dw-preview h2 { font-size: 1.16em; margin: 2.6em 0 1.6em 0; } /* H2 to next block 3.44 em; the following block's top margin collapses into this */ /* body to H2 4.48 em, H2 to body 3.44 em */
-.dw-preview h3 { font-size: 1em; margin: 1.4em 0 0.3em 0; } /* body to H3 3.17 em, H3 to list 1.58 em */
-.dw-preview h4 { font-size: 1em; font-style: italic; margin: 1.6em 0 0.2em 0; }
-.dw-preview h5 { font-size: 1em; font-weight: 400; font-style: italic; margin: 0.2em 0; }
-.dw-preview h6 { font-size: 1em; font-weight: 700; text-align: left; margin: 0.2em 0 0 0; }
-.dw-preview ul, .dw-preview ol { margin: 0 0 1.45em 0; padding-left: 1.45em; }
+.dw-preview h1 { font-size: 1.28em; margin: 0; }
+.dw-preview h2 { font-size: 1.16em; margin: 0; }
+.dw-preview h3 { font-size: 1em; margin: 0; }
+.dw-preview h4 { font-size: 1em; font-style: italic; margin: 0; }
+.dw-preview h5 { font-size: 1em; font-weight: 400; font-style: italic; margin: 0; }
+.dw-preview h6 { font-size: 1em; font-weight: 700; text-align: left; margin: 0; }
+.dw-preview ul, .dw-preview ol { margin: 0; padding-left: 1.45em; }
 .dw-preview li { margin: 0; }
 .dw-preview li > p { margin: 0; }
 .dw-preview ul ul, .dw-preview ol ol, .dw-preview ul ol, .dw-preview ol ul { margin: 0; padding-left: 1.45em; }
@@ -401,16 +403,16 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-preview li.task-list-item input:checked { border-color: #9a9a9a; }
 .dw-preview li.task-list-item input:checked::after { content: ''; position: absolute; left: 0.22em; top: 0.02em; width: 0.3em; height: 0.55em; border: solid #9a9a9a; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
 .dw-preview li.task-list-item:has(input:checked) { color: #9a9a9a; text-decoration: line-through; }
-.dw-preview blockquote { margin: 3em 0 1.45em 0; padding: 0 0 0 1.2em; font-style: italic; } /* list to quote 6.3 em, quote to body 3.1 em */
+.dw-preview blockquote { margin: 0; padding: 0 0 0 1.2em; font-style: italic; }
 .dw-preview blockquote p { margin: 0; }
 .dw-preview a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .dw-preview code { font-family: 'iA Writer Duo V', 'iA Writer Duo S', ui-monospace, Menlo, monospace; font-size: 0.9em; background: #f2f2f2; padding: 0.1em 0.25em; border-radius: 3px; }
-.dw-preview pre { background: #f2f2f2; padding: 1em; margin: 0 0 1.45em 0; overflow-x: auto; line-height: 1.7; } /* code pitch 1.46 body em at 0.9 em */
+.dw-preview pre { background: #f2f2f2; padding: 1em; margin: 0; overflow-x: auto; line-height: 1.7; } /* code pitch 1.46 body em at 0.9 em */
 .dw-preview pre code { background: transparent; padding: 0; }
-.dw-preview table { border-collapse: collapse; width: 100%; margin: 0 0 1.45em 0; font-size: 0.82em; }
+.dw-preview table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.82em; }
 .dw-preview th { text-align: left; font-weight: 700; padding: 0.3em 0.5em; border-bottom: 1px solid #e6e6e6; border-top: 1px solid #e6e6e6; } /* rows 1.81 body em */
 .dw-preview td { padding: 0.3em 0.5em; border-bottom: 1px solid #e6e6e6; }
-.dw-preview hr { border: 0; border-top: 2px solid #1a1a1a; margin: 2em 0; }
+.dw-preview hr { border: 0; margin: 0; height: 1.56em; height: 1lh; color: #1a1a1a; background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat; } /* one line tall, as the --- line is in the editor; the rule drawn through its middle */
 .dw-preview mark { background: #f0d9a6; color: inherit; padding: 0.05em 0; box-shadow: 0 0.17em 0 0 #e7ba5a; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .dw-preview del { color: inherit; }
 .dw-preview img { max-width: 100%; }
@@ -422,5 +424,6 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 [data-dw-dark] .dw-preview code, [data-dw-dark]  .dw-preview pre { background: var(--dw-codebg); }
 [data-dw-dark] .dw-preview th, [data-dw-dark]  .dw-preview td { border-color: var(--dw-border); }
 [data-dw-dark] .dw-preview hr, [data-dw-dark]  .dw-preview .footnotes { border-color: var(--dw-fg); }
+[data-dw-dark] .dw-preview hr { color: var(--dw-fg); }
 [data-dw-dark] .dw-preview li.task-list-item input { border-color: var(--dw-fg); }
 
