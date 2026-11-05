@@ -86,6 +86,8 @@ export const marksExtension = [hideMarksField, hider];
 // left edge; list and quote continuation lines align with their text.
 const LINE_START = /^(\s*)(#{1,6} |[-*+] (?:\[[ xX]\] )?|\d+\. |> )/;
 const doneMark = Decoration.mark({class: 'dw-done'});
+const hrLine = Decoration.line({class: 'dw-hr'});
+const hrHidden = Decoration.replace({});
 const taskMark = Decoration.mark({class: 'dw-task'});
 const hashMark = Decoration.mark({class: 'dw-hashmark'});
 const strongMark = Decoration.mark({class: 'dw-strongmark'});
@@ -97,6 +99,7 @@ function layout(view: EditorView): DecorationSet {
   const {state} = view;
   const hide = state.field(hideMarksField);
   const active = hide ? linesWithCursor(state) : null;
+  const cursorLines = active ?? linesWithCursor(state);
   // iA keeps heading marks inline when the pane is narrow (split phone screen)
   // and hangs them only when there is room; same breakpoint as the text size.
   const hangHeadings = view.dom.clientWidth >= 520;
@@ -109,6 +112,15 @@ function layout(view: EditorView): DecorationSet {
     enter(node) {
       // Fenced code blocks: one grey box around the fence lines (iA: #f0f0f0, no vertical
       // padding, one-character overhang left and right, 0.17 em corners).
+      // Divider (---, ***, ___): a full-width line; the dashes come back on the cursor line so it stays editable.
+      if (node.name === 'HorizontalRule') {
+        const line = state.doc.lineAt(node.from);
+        if (!cursorLines.has(line.number)) {
+          items.push({from: line.from, to: line.from, deco: hrLine});
+          items.push({from: node.from, to: node.to, deco: hrHidden});
+        }
+        return;
+      }
       if (node.name === 'FencedCode') {
         const first = state.doc.lineAt(node.from).number, last = state.doc.lineAt(node.to).number;
         for (let n = first; n <= last; n++) {

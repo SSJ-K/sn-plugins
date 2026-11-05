@@ -218,6 +218,10 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-menu-item:hover { background: rgba(0, 0, 0, 0.06); }
 .dw-menu-item svg { width: 18px; height: 18px; color: var(--dw-muted); flex: 0 0 auto; }
 .dw-menu-picker { cursor: default; }
+/* Dropdown buttons (formatting, lists, text size): an icon plus the picker's small chevron. */
+.dw-drop { width: calc(var(--dw-btn) + 12px); gap: 0; }
+.dw-menu-keys { margin-left: auto; padding-left: 16px; color: var(--dw-muted); font-size: 12px; }
+.dw-drop-menu { max-width: calc(100% - 16px); } /* never wider than the row on the narrowest phone */
 .dw-toc { right: auto; }
 .dw-toc .dw-menu-item { display: block; }
 .dw-toc-l2 { padding-left: 22px; }
@@ -258,6 +262,9 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-quote { color: var(--dw-fg); font-style: normal; }              /* iA: quote text plain */
 .dw-quotemark { color: var(--dw-fg); }
 .dw-rule { color: var(--dw-mark); }
+/* Divider (---) drawn as a thin line across the column; the dashes show only while the cursor is on it (K, 2026-11-05). */
+.cm-line.dw-hr { position: relative; }
+.cm-line.dw-hr::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--dw-mark); }
 .dw-done { color: var(--dw-faint); text-decoration: line-through; }
 .dw-task { cursor: pointer; }
 /* Fenced code block box, measured from iA's editor (round 8). */

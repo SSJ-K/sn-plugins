@@ -7,7 +7,7 @@ import {I} from './icons';
 import {
   headingLevelAtCursor, setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote,
   toggleNumbered, insertLink, toggleCodeBlock, insertTable, insertDivider, clearFormatting,
-  headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek
+  headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek, upperCase
 } from './commands';
 import {setFindQuery, findNext, countMatches, findQueryField} from './find';
 
@@ -30,7 +30,11 @@ interface Tool {
   run: () => any;
   active?: boolean;
   picker?: boolean;     // the heading picker, wider than a button
+  items?: Tool[];       // a dropdown: the button opens a menu of these tools
 }
+
+// The shortcut part of a title, "Bold (Cmd+B)" -> "Cmd+B", shown beside each item in a dropdown.
+const keysOf = (t: Tool) => (/\(([^)]*)\)/.exec(t.title)?.[1] ?? '').split(',')[0];
 
 const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: Props) => {
   const [findOpen, setFindOpen] = useState(false);
@@ -38,6 +42,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   const [count, setCount] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [drop, setDrop] = useState<{key: string; left: number} | null>(null); // the open dropdown, under its button
   const [visible, setVisible] = useState(99);
   const findInput = useRef<HTMLInputElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -47,7 +52,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   useEffect(() => { if (findFocusTick > 0) setFindOpen(true); }, [findFocusTick]);
   useEffect(() => { if (findOpen) findInput.current?.focus(); }, [findOpen, findFocusTick]);
   // Any click or move in the note closes the panels.
-  useEffect(() => { if (tocOpen) setTocOpen(false); if (moreOpen) setMoreOpen(false); }, [selectionTick]);
+  useEffect(() => { if (tocOpen) setTocOpen(false); if (moreOpen) setMoreOpen(false); if (drop) setDrop(null); }, [selectionTick]);
 
   useEffect(() => {
     if (view.state.field(findQueryField) !== query) view.dispatch({effects: setFindQuery.of(query)});
@@ -66,35 +71,43 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
     if (e.key === 'Escape') { e.preventDefault(); closeFind(); }
   };
 
-  const keep = (e: Event) => e.preventDefault(); // keep the editor's focus and selection
+  const keep = (e: {preventDefault: () => void}) => e.preventDefault(); // keep the editor's focus and selection
   const openFind = () => { setFindOpen(true); findInput.current?.focus(); };
 
   // Priority order: most used first. Everything after what fits goes under "more".
   const tools: Tool[] = [
-    {key: 'toc', group: 0, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => setTocOpen(o => !o), active: tocOpen},
+    {key: 'toc', group: 0, label: 'Table of contents', title: 'Table of contents', icon: I.toc, run: () => { setDrop(null); setTocOpen(o => !o); }, active: tocOpen},
     {key: 'cw', group: 9, label: 'Insert calendar week', title: 'Insert calendar week, Sunday start (Cmd+Shift+W)', text: calendarWeek(), run: () => insertCalendarWeek(view)},
     {key: 'date', group: 9, label: 'Insert today', title: 'Insert today as MM/DD/YYYY (Cmd+Shift+D)', text: 'Date', run: () => insertToday(view)},
-    {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
-    {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
-    {key: 'highlight', group: 3, label: 'Highlight', title: 'Highlight (Cmd+Shift+H, or type = over a selection)', icon: I.highlight, run: () => toggleMark('==')(view)},
-    {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
-    {key: 'checks', group: 4, label: 'Checklist', title: 'Checklist (Cmd+Shift+9)', icon: I.checks, run: () => toggleChecklist(view)},
+    // Dropdowns (K, 2026-11-05): formatting, lists and text size each open a menu of their tools.
+    {key: 'format', group: 3, label: 'Formatting', title: 'Formatting', icon: I.bold, run: () => {}, items: [
+      {key: 'bold', group: 3, label: 'Bold', title: 'Bold (Cmd+B)', icon: I.bold, run: () => toggleMark('**')(view)},
+      {key: 'italic', group: 3, label: 'Italic', title: 'Italic (Cmd+I)', icon: I.italic, run: () => toggleMark('*')(view)},
+      {key: 'highlight', group: 3, label: 'Highlight', title: 'Highlight (Cmd+Shift+H, or type = over a selection)', icon: I.highlight, run: () => toggleMark('==')(view)},
+      {key: 'strike', group: 3, label: 'Strikethrough', title: 'Strikethrough (Cmd+Shift+X)', icon: I.strike, run: () => toggleMark('~~')(view)},
+      {key: 'code', group: 3, label: 'Inline code', title: 'Inline code (Cmd+E)', icon: I.code, run: () => toggleMark('`')(view)},
+      {key: 'caps', group: 3, label: 'ALL CAPS', title: 'ALL CAPS (Cmd+Shift+U)', text: 'AA', run: () => upperCase(view)}
+    ]},
+    {key: 'lists', group: 4, label: 'Lists', title: 'Lists', icon: I.bullets, run: () => {}, items: [
+      {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
+      {key: 'checks', group: 4, label: 'Checklist', title: 'Checklist (Cmd+Shift+9)', icon: I.checks, run: () => toggleChecklist(view)},
+      {key: 'numbers', group: 4, label: 'Numbered list', title: 'Numbered list (Cmd+Shift+7)', icon: I.numbers, run: () => toggleNumbered(view)}
+    ]},
     {key: 'undo', group: 1, label: 'Undo', title: 'Undo (Cmd+Z)', icon: I.undo, run: undo},
     {key: 'redo', group: 1, label: 'Redo', title: 'Redo (Cmd+Shift+Z)', icon: I.redo, run: redo},
     {key: 'find', group: 5, label: 'Find in note', title: 'Find in note (Cmd+F)', icon: I.search, run: openFind, active: findOpen},
     {key: 'link', group: 3, label: 'Link', title: 'Link (Cmd+K)', icon: I.link, run: () => insertLink(view)},
-    {key: 'numbers', group: 4, label: 'Numbered list', title: 'Numbered list (Cmd+Shift+7)', icon: I.numbers, run: () => toggleNumbered(view)},
     {key: 'quote', group: 6, label: 'Quote', title: "Quote (Cmd+')", icon: I.quote, run: () => toggleQuote(view)},
-    {key: 'code', group: 3, label: 'Inline code', title: 'Inline code (Cmd+E)', icon: I.code, run: () => toggleMark('`')(view)},
-    {key: 'strike', group: 3, label: 'Strikethrough', title: 'Strikethrough (Cmd+Shift+X)', icon: I.strike, run: () => toggleMark('~~')(view)},
     {key: 'codeblock', group: 6, label: 'Code block', title: 'Code block (Cmd+Shift+C)', icon: I.codeBlock, run: () => toggleCodeBlock(view)},
     {key: 'table', group: 6, label: 'Table', title: 'Insert table', icon: I.table, run: () => insertTable(view)},
     {key: 'divider', group: 6, label: 'Divider', title: 'Insert divider', icon: I.divider, run: () => insertDivider(view)},
     {key: 'clear', group: 7, label: 'Clear formatting', title: 'Clear formatting', icon: I.clear, run: () => clearFormatting(view)},
-    {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+Option+=)', icon: I.textBigger, run: () => onSizeStep(1)},
-    {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+Option+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
-    {key: 'heading', group: 10, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true},
-    {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Option+0)', icon: I.textReset, run: () => onSizeStep(0)}
+    {key: 'size', group: 8, label: 'Text size', title: 'Text size', icon: I.textBigger, run: () => {}, items: [
+      {key: 'bigger', group: 8, label: 'Bigger text', title: 'Bigger text (Cmd+Option+=)', icon: I.textBigger, run: () => onSizeStep(1)},
+      {key: 'smaller', group: 8, label: 'Smaller text', title: 'Smaller text (Cmd+Option+-)', icon: I.textSmaller, run: () => onSizeStep(-1)},
+      {key: 'resetsize', group: 8, label: 'Reset text size', title: 'Reset text size (Cmd+Option+0)', icon: I.textReset, run: () => onSizeStep(0)}
+    ]},
+    {key: 'heading', group: 10, label: 'Text style', title: 'Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)', run: () => {}, picker: true}
   ];
 
   // Measure: how many tools fit in the row, leaving room for "more" when needed.
@@ -107,7 +120,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
       const gap = parseFloat(cs.getPropertyValue('--dw-gap')) || 4;
       const avail = el.clientWidth - 16; // row padding
       const sepW = 9 + gap;
-      const widths = tools.map((t, i) => (t.picker ? btn + 12 : t.text ? btn + 16 : btn) + gap + (i > 0 && t.group !== tools[i - 1].group ? sepW : 0));
+      const widths = tools.map((t, i) => (t.picker || t.items ? btn + 12 : t.text ? btn + 16 : btn) + gap + (i > 0 && t.group !== tools[i - 1].group ? sepW : 0));
       const all = widths.reduce((a, w) => a + w, 0);
       if (all <= avail) { setVisible(tools.length); return; }
       const moreW = sepW + btn + gap;
@@ -126,12 +139,32 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   }, []);
 
   const shown = tools.slice(0, visible);
-  const hidden = tools.slice(visible);
+  // In the "more" menu a dropdown's tools are listed directly, not nested.
+  const hidden = tools.slice(visible).flatMap(t => t.items ?? [t]);
 
-  const btn = (t: Tool) => (
+  const btn = (t: Tool) => t.items ? (
+    <button key={t.key} type="button" className={'dw-btn dw-drop' + (drop?.key === t.key ? ' dw-active' : '')} title={t.title} aria-label={t.title}
+            aria-haspopup="menu" aria-expanded={drop?.key === t.key} onMouseDown={keep}
+            onClick={(e) => {
+              // Open under the button, kept inside the row so a menu near the right edge is not cut off.
+              const b = e.currentTarget as HTMLElement, w = (b.offsetParent as HTMLElement)?.clientWidth ?? 0;
+              const left = Math.max(8, Math.min(b.offsetLeft, w - 328)); // 320 px widest menu plus 8 px air
+              setTocOpen(false); setMoreOpen(false); setDrop(d => d?.key === t.key ? null : {key: t.key, left});
+            }}>
+      <t.icon/><span className="dw-chev"><I.chevron/></span>
+    </button>
+  ) : (
     <button key={t.key} type="button" className={'dw-btn' + (t.active ? ' dw-active' : '') + (t.text ? ' dw-btn-text' : '')} title={t.title} aria-label={t.title}
             onMouseDown={keep} onClick={t.run}>{t.text ? t.text : <t.icon/>}</button>
   );
+
+  const menuItem = (t: Tool, close: () => void) => (
+    <button key={t.key} type="button" className={'dw-menu-item' + (t.active ? ' dw-active' : '')} title={t.title}
+            onClick={() => { close(); t.run(); }}>
+      {t.text ? <b>{t.text}</b> : <t.icon/>}<span>{t.label}</span>{keysOf(t) && <span className="dw-menu-keys">{keysOf(t)}</span>}
+    </button>
+  );
+  const openDrop = drop && tools.find(t => t.key === drop.key);
 
   const picker = (
     <span key="heading" className="dw-selectwrap" title="Text style (Cmd+1 to Cmd+6, Cmd+Shift+0 body)">
@@ -167,7 +200,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
           <>
             <span className="dw-sep" aria-hidden="true"/>
             <button type="button" className={'dw-btn' + (moreOpen ? ' dw-active' : '')} title="More tools" aria-label="More tools"
-                    onMouseDown={keep} onClick={() => setMoreOpen(o => !o)}><I.more/></button>
+                    onMouseDown={keep} onClick={() => { setDrop(null); setMoreOpen(o => !o); }}><I.more/></button>
           </>
         )}
       </div>
@@ -175,10 +208,12 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
         <div className="dw-menu" onMouseDown={keep}>
           {hidden.map(t => t.picker ? (
             <div key={t.key} className="dw-menu-item dw-menu-picker">{picker}<span>Text style</span></div>
-          ) : (
-            <button key={t.key} type="button" className={'dw-menu-item' + (t.active ? ' dw-active' : '')}
-                    onClick={() => { setMoreOpen(false); t.run(); }}>{t.text ? <b>{t.text}</b> : <t.icon/>}<span>{t.label}</span></button>
-          ))}
+          ) : menuItem(t, () => setMoreOpen(false)))}
+        </div>
+      )}
+      {openDrop && openDrop.items && (
+        <div className="dw-menu dw-drop-menu" role="menu" style={{left: drop.left}} onMouseDown={keep}>
+          {openDrop.items.map(t => menuItem(t, () => setDrop(null)))}
         </div>
       )}
       {tocOpen && (

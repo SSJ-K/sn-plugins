@@ -296,6 +296,18 @@ export function calendarWeek(d = new Date()): string {
   return 'CW' + String(Math.floor(days / 7) + 1).padStart(2, '0');
 }
 
+/** Selected text to capitals (Cmd+Shift+U); Cmd+Z brings the original back. An empty selection is left alone. */
+export function upperCase(view: EditorView) {
+  const {state} = view;
+  view.dispatch(state.changeByRange((r) => {
+    if (r.empty) return {range: r};
+    const up = state.sliceDoc(r.from, r.to).toUpperCase(); // may change length (ß becomes SS)
+    return {changes: {from: r.from, to: r.to, insert: up}, range: EditorSelection.range(r.from, r.from + up.length)};
+  }), {scrollIntoView: true});
+  view.focus();
+  return true;
+}
+
 /** Today as MM/DD/YYYY. */
 export function todayMDY(d = new Date()): string {
   return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear();
