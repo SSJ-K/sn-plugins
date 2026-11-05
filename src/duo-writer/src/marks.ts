@@ -40,7 +40,9 @@ function build(view: EditorView): DecorationSet {
         const name = node.name;
         if (name === 'URL') {
           // In a [text](url) link hide the url; the surrounding LinkMarks go too.
-          if (!active.has(state.doc.lineAt(node.from).number)) ranges.push({from: node.from, to: node.to});
+          // A bare or <...> address is the visible text itself, so it stays (K's email bug, 2026-11-05).
+          const parent = node.node.parent?.name;
+          if ((parent === 'Link' || parent === 'Image') && !active.has(state.doc.lineAt(node.from).number)) ranges.push({from: node.from, to: node.to});
           return;
         }
         if (!MARK_NODES.has(name)) return;
