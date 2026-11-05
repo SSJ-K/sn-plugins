@@ -9,7 +9,7 @@ import {
   toggleNumbered, insertLink, toggleCodeBlock, insertTable, insertDivider, clearFormatting,
   headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek, upperCase
 } from './commands';
-import {setFindQuery, findNext, countMatches, findQueryField, replaceNext, replaceAll} from './find';
+import {setFindQuery, findNext, countMatches, findQueryField, replaceNext, replaceAll, emptyFind} from './find';
 
 interface Props {
   view: EditorView;
@@ -40,6 +40,8 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [replacement, setReplacement] = useState('');
+  const [matchCase, setMatchCase] = useState(false);
+  const [wholeWord, setWholeWord] = useState(false);
   const [count, setCount] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -57,14 +59,18 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   useEffect(() => { if (tocOpen) setTocOpen(false); if (moreOpen) setMoreOpen(false); if (drop) setDrop(null); if (keysOpen) setKeysOpen(false); }, [selectionTick]);
 
   useEffect(() => {
-    if (view.state.field(findQueryField) !== query) view.dispatch({effects: setFindQuery.of(query)});
+    const q = view.state.field(findQueryField);
+    if (q.text !== query || q.matchCase !== matchCase || q.wholeWord !== wholeWord)
+      view.dispatch({effects: setFindQuery.of({text: query, matchCase, wholeWord})});
     setCount(countMatches(view.state));
-  }, [query, selectionTick]);
+  }, [query, matchCase, wholeWord, selectionTick]);
 
   const closeFind = () => {
     setFindOpen(false);
     setQuery('');
-    view.dispatch({effects: setFindQuery.of('')});
+    setMatchCase(false); // switches start off each time, as in Super
+    setWholeWord(false);
+    view.dispatch({effects: setFindQuery.of(emptyFind)});
     view.focus();
   };
 
@@ -261,6 +267,8 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
           <input ref={findInput} className="dw-find-input" type="search" placeholder="Find in note"
                  value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
                  onKeyDown={onFindKey as any}/>
+          <button type="button" className={'dw-btn dw-btn-text' + (matchCase ? ' dw-active' : '')} title="Match case" aria-label="Match case" aria-pressed={matchCase} onMouseDown={keep} onClick={() => setMatchCase(o => !o)}>Aa</button>
+          <button type="button" className={'dw-btn dw-btn-text' + (wholeWord ? ' dw-active' : '')} title="Whole word" aria-label="Whole word" aria-pressed={wholeWord} onMouseDown={keep} onClick={() => setWholeWord(o => !o)}>W</button>
           <span className="dw-count">{query ? count : ''}</span>
           <button type="button" className="dw-btn" title="Previous (Shift+Enter)" aria-label="Previous" onMouseDown={keep} onClick={() => findNext(view, true)}><I.prev/></button>
           <button type="button" className="dw-btn" title="Next (Enter)" aria-label="Next" onMouseDown={keep} onClick={() => findNext(view)}><I.next/></button>

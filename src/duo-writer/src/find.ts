@@ -1,13 +1,21 @@
 // Find in note: highlights every match of the current query and steps
-// through them. Uses the search package's cursor only; no built-in panel.
+// through them. Uses the search package's query and cursor only; no built-in panel.
 import {StateField, StateEffect, EditorSelection, EditorState} from '@codemirror/state';
 import {EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate} from '@codemirror/view';
-import {SearchCursor} from '@codemirror/search';
+import {SearchQuery} from '@codemirror/search';
 
-export const setFindQuery = StateEffect.define<string>();
+export interface FindQuery {
+  text: string;
+  matchCase: boolean;   // off: capitals ignored (the default, as in Super)
+  wholeWord: boolean;   // on: "cat" skips "category"
+}
 
-export const findQueryField = StateField.define<string>({
-  create: () => '',
+export const emptyFind: FindQuery = {text: '', matchCase: false, wholeWord: false};
+
+export const setFindQuery = StateEffect.define<FindQuery>();
+
+export const findQueryField = StateField.define<FindQuery>({
+  create: () => emptyFind,
   update(value, tr) {
     for (const e of tr.effects) if (e.is(setFindQuery)) value = e.value;
     return value;
@@ -15,10 +23,13 @@ export const findQueryField = StateField.define<string>({
 });
 
 const matchMark = Decoration.mark({class: 'dw-match'});
-const normalize = (s: string) => s.toLowerCase();
 
-function cursorFor(state: EditorState, query: string, from = 0, to = state.doc.length) {
-  return new SearchCursor(state.doc, query, from, to, normalize);
+// Matches of the current query between from and to, in order.
+function* matches(state: EditorState, from = 0, to = state.doc.length) {
+  const q = state.field(findQueryField);
+  if (!q.text) return;
+  const c = new SearchQuery({search: q.text, caseSensitive: q.matchCase, wholeWord: q.wholeWord, literal: true}).getCursor(state, from, to);
+  for (let r = c.next(); !r.done; r = c.next()) yield {from: r.value.from, to: r.value.to};
 }
 
 const highlighter = ViewPlugin.fromClass(class {
@@ -31,13 +42,9 @@ const highlighter = ViewPlugin.fromClass(class {
     if (u.docChanged || u.viewportChanged || queryChanged) this.decorations = this.build(u.view);
   }
   build(view: EditorView): DecorationSet {
-    const query = view.state.field(findQueryField);
-    if (!query) return Decoration.none;
     const ranges = [];
-    for (const {from, to} of view.visibleRanges) {
-      const c = cursorFor(view.state, query, from, to);
-      while (!c.next().done) ranges.push(matchMark.range(c.value.from, c.value.to));
-    }
+    for (const {from, to} of view.visibleRanges)
+      for (const m of matches(view.state, from, to)) ranges.push(matchMark.range(m.from, m.to));
     return Decoration.set(ranges, true);
   }
 }, {decorations: v => v.decorations});
@@ -46,37 +53,21 @@ export const findExtension = [findQueryField, highlighter];
 
 /** Count of matches in the whole note. */
 export function countMatches(state: EditorState): number {
-  const query = state.field(findQueryField);
-  if (!query) return 0;
   let n = 0;
-  const c = cursorFor(state, query);
-  while (!c.next().done) n++;
+  for (const _ of matches(state)) n++;
   return n;
 }
 
 /** Select the next match after the cursor, wrapping around the end. */
 export function findNext(view: EditorView, backwards = false): boolean {
   const {state} = view;
-  const query = state.field(findQueryField);
-  if (!query) return false;
   const sel = state.selection.main;
-  let found: {from: number; to: number} | null = null;
+  let found: {from: number; to: number} | undefined;
   if (!backwards) {
-    let c = cursorFor(state, query, sel.to);
-    if (!c.next().done) found = c.value;
-    else {
-      c = cursorFor(state, query, 0, sel.to);
-      if (!c.next().done) found = c.value;
-    }
+    found = matches(state, sel.to).next().value || matches(state, 0, sel.to).next().value;
   } else {
-    let last: {from: number; to: number} | null = null;
-    const c = cursorFor(state, query, 0, Math.max(0, sel.from));
-    while (!c.next().done) last = {from: c.value.from, to: c.value.to};
-    if (!last) {
-      const c2 = cursorFor(state, query, sel.from);
-      while (!c2.next().done) last = {from: c2.value.from, to: c2.value.to};
-    }
-    found = last;
+    for (const m of matches(state, 0, sel.from)) found = m;
+    if (!found) for (const m of matches(state, sel.from)) found = m;
   }
   if (!found) return false;
   view.dispatch({
@@ -87,14 +78,9 @@ export function findNext(view: EditorView, backwards = false): boolean {
   return true;
 }
 
-/** Every match of the query in the whole note as one change list (case ignored, as in find). */
+/** Every match of the query in the whole note as one change list. */
 export function replaceAllChanges(state: EditorState, text: string) {
-  const query = state.field(findQueryField);
-  const changes: {from: number; to: number; insert: string}[] = [];
-  if (!query) return changes;
-  const c = cursorFor(state, query);
-  while (!c.next().done) changes.push({from: c.value.from, to: c.value.to, insert: text});
-  return changes;
+  return [...matches(state)].map(m => ({...m, insert: text}));
 }
 
 /** Replace every match in one step, so one undo brings them all back. */
@@ -107,10 +93,9 @@ export function replaceAll(view: EditorView, text: string): boolean {
 /** Replace the selected match, then move to the next; if no match is selected, select the next one first. */
 export function replaceNext(view: EditorView, text: string): boolean {
   const {state} = view;
-  const query = state.field(findQueryField);
-  if (!query) return false;
   const sel = state.selection.main;
-  if (!sel.empty && normalize(state.sliceDoc(sel.from, sel.to)) === normalize(query)) {
+  const m = sel.empty ? undefined : matches(state, sel.from, sel.to).next().value;
+  if (m && m.from === sel.from && m.to === sel.to) {
     view.dispatch({
       changes: {from: sel.from, to: sel.to, insert: text},
       selection: EditorSelection.cursor(sel.from + text.length),
@@ -120,9 +105,17 @@ export function replaceNext(view: EditorView, text: string): boolean {
   return findNext(view);
 }
 
-// Self-check of replace all (runs once at load, console only).
+// Self-check of replace all with each switch (runs once at load, console only).
 if (typeof console !== 'undefined') {
-  const s = EditorState.create({doc: 'Cat cat CAT dog', extensions: findQueryField}).update({effects: setFindQuery.of('cat')}).state;
-  const out = s.update({changes: replaceAllChanges(s, 'x')}).state.doc.toString();
-  if (out !== 'x x x dog') console.error('replaceAll self-check failed', out);
+  const doc = 'Cat cat CAT category dog';
+  for (const [q, want] of [
+    [{text: 'cat', matchCase: false, wholeWord: false}, 'x x x xegory dog'],
+    [{text: 'cat', matchCase: true, wholeWord: false}, 'Cat x CAT xegory dog'],
+    [{text: 'cat', matchCase: false, wholeWord: true}, 'x x x category dog'],
+    [{text: 'cat', matchCase: true, wholeWord: true}, 'Cat x CAT category dog'],
+  ] as [FindQuery, string][]) {
+    const s = EditorState.create({doc, extensions: findQueryField}).update({effects: setFindQuery.of(q)}).state;
+    const out = s.update({changes: replaceAllChanges(s, 'x')}).state.doc.toString();
+    if (out !== want) console.error('replaceAll self-check failed', q, out);
+  }
 }

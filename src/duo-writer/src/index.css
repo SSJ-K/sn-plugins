@@ -238,12 +238,13 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-find {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;  /* narrow frames: buttons drop to a second line rather than squeeze the field */
   gap: var(--dw-gap);
   padding: 0 8px 8px 8px;
 }
 .dw-find-input {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 8em;
+  min-width: 8em;
   max-width: 24em;
   height: var(--dw-btn);
   font: inherit;
