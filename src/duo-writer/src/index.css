@@ -199,6 +199,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
   padding: 6px;
 }
 .dw-menu-item {
+  box-sizing: border-box; /* width 100% includes the padding, so rows never spill sideways */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -222,6 +223,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-drop { width: calc(var(--dw-btn) + 12px); gap: 0; }
 .dw-menu-keys { margin-left: auto; padding-left: 16px; color: var(--dw-muted); font-size: 12px; }
 .dw-drop-menu { max-width: calc(100% - 16px); } /* never wider than the row on the narrowest phone */
+.dw-menu-head { padding: 8px 10px 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--dw-muted); }
 .dw-toc { right: auto; }
 .dw-toc .dw-menu-item { display: block; }
 .dw-toc-l2 { padding-left: 22px; }

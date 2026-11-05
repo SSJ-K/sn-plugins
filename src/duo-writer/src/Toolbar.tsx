@@ -139,8 +139,7 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
   }, []);
 
   const shown = tools.slice(0, visible);
-  // In the "more" menu a dropdown's tools are listed directly, not nested.
-  const hidden = tools.slice(visible).flatMap(t => t.items ?? [t]);
+  const hidden = tools.slice(visible);
 
   const btn = (t: Tool) => t.items ? (
     <button key={t.key} type="button" className={'dw-btn dw-drop' + (drop?.key === t.key ? ' dw-active' : '')} title={t.title} aria-label={t.title}
@@ -206,8 +205,14 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
       </div>
       {moreOpen && (
         <div className="dw-menu" onMouseDown={keep}>
+          {/* A dropdown's tools stay together under a small heading (K, 2026-11-05). */}
           {hidden.map(t => t.picker ? (
             <div key={t.key} className="dw-menu-item dw-menu-picker">{picker}<span>Text style</span></div>
+          ) : t.items ? (
+            <div key={t.key} role="group" aria-label={t.label}>
+              <div className="dw-menu-head">{t.label}</div>
+              {t.items.map(i => menuItem(i, () => setMoreOpen(false)))}
+            </div>
           ) : menuItem(t, () => setMoreOpen(false)))}
         </div>
       )}
