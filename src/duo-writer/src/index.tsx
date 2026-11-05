@@ -72,9 +72,7 @@ const App = () => {
   const setPreviewMode = (next: boolean, persist: boolean) => {
     if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
     setPreview(next);
-    // Back to editing: show the editor and wake it inside the tap itself. On iPadOS 27 a wake-up from a timer,
-    // outside the tap, left it taking no typing until Bold was pressed (K, 2026-11-05).
-    if (!next && host.current) { host.current.hidden = false; editorRef.current?.view.focus(); }
+    if (!next) setTimeout(() => editorRef.current?.view.focus(), 0);
     const id = noteId();
     if (persist && id) {
       const notes = {...(snApi.extensionMeta?.previewNotes || {})};
