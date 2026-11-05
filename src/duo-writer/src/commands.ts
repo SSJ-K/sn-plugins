@@ -1,7 +1,7 @@
 // Editing commands behind the tools row and the keyboard shortcuts.
 // Every command edits plain Markdown marks; nothing else is stored.
 import {EditorView} from '@codemirror/view';
-import {EditorState, EditorSelection} from '@codemirror/state';
+import {EditorState, EditorSelection, Text} from '@codemirror/state';
 
 const HEADING = /^(#{1,6})\s+/;
 const CHECK = /^(\s*)- \[( |x|X)\] /;
@@ -174,6 +174,78 @@ export function toggleNumbered(view: EditorView) {
   });
 }
 
+// A list line: indent, marker ("-", "*", "+", "1." or "1)"), the spaces after it. Checklists are "- " lines.
+const LIST_ITEM = /^( *)([-*+]|\d+[.)])( +)/;
+
+/**
+ * Changes that move the given list lines one level right (Tab) or left (Shift+Tab), sub-items with them.
+ * Right lines the item up under the text of the item above at its level (2 spaces under "- ", 3 under "1. "),
+ * which is what Markdown needs to nest it; the first item of a list has nothing to go under and stays.
+ * Left moves it to its parent's indent. A numbered item that becomes the first sub-item is renumbered to 1,
+ * or preview would start the new list at its old number.
+ */
+export function listShiftChanges(doc: Text, lineNos: number[], right: boolean) {
+  const changes: {from: number; to: number; insert: string}[] = [];
+  const moved = new Map<number, number>(); // line number -> new indent
+  for (const n of lineNos) {
+    if (moved.has(n)) continue; // already moved as a sub-item of a line above
+    const line = doc.line(n);
+    const m = LIST_ITEM.exec(line.text);
+    if (!m) continue;
+    const indent = m[1].length;
+    let target = -1, first = true;
+    const deeper: number[] = [];
+    for (let k = n - 1; k >= 1; k--) {
+      const t = doc.line(k).text;
+      if (!t.trim()) continue;
+      const p = LIST_ITEM.exec(t);
+      if (!p) { if (/^\S/.test(t)) break; continue; } // unindented text ends the list; item text lines are skipped
+      const pi = p[1].length;
+      if (right && pi > indent) { deeper.push(pi); continue; }
+      if (right && pi === indent) {
+        target = moved.get(k) ?? pi + p[2].length + p[3].length;
+        first = !moved.has(k) && !deeper.includes(target);
+      }
+      if (!right && pi < indent) target = pi;
+      if (pi <= indent) break;
+    }
+    if (!right && target < 0 && indent > 0) target = 0;
+    if (target < 0 || target === indent) continue;
+    const pad = ' '.repeat(target);
+    if (right && first && /\d/.test(m[2])) changes.push({from: line.from, to: line.from + indent + m[2].length, insert: pad + '1' + m[2].slice(-1)});
+    else changes.push({from: line.from, to: line.from + indent, insert: pad});
+    moved.set(n, target);
+    // Its sub-items and their text: the lines below indented deeper than it, until the list comes back to its level.
+    for (let k = n + 1; k <= doc.lines; k++) {
+      const t = doc.line(k).text;
+      if (!t.trim()) continue;
+      const ki = /^ */.exec(t)![0].length;
+      if (ki <= indent) break;
+      if (moved.has(k)) continue;
+      const ni = Math.max(0, ki + target - indent);
+      changes.push({from: doc.line(k).from, to: doc.line(k).from + ki, insert: ' '.repeat(ni)});
+      moved.set(k, ni);
+    }
+  }
+  return changes;
+}
+
+function shiftList(view: EditorView, right: boolean) {
+  const {state} = view;
+  const lineNos = new Set<number>();
+  for (const r of state.selection.ranges)
+    for (let n = state.doc.lineAt(r.from).number; n <= state.doc.lineAt(r.to).number; n++) lineNos.add(n);
+  const nums = [...lineNos].sort((a, b) => a - b);
+  // Not on a list line: leave Tab to the app, as before.
+  if (!nums.some(n => LIST_ITEM.test(state.doc.line(n).text))) return false;
+  const changes = listShiftChanges(state.doc, nums, right);
+  if (changes.length) view.dispatch({changes, scrollIntoView: true});
+  view.focus();
+  return true;
+}
+export const indentList = (view: EditorView) => shiftList(view, true);
+export const outdentList = (view: EditorView) => shiftList(view, false);
+
 /** Wrap the selection as a link: [text](url) with the cursor inside the parens. */
 export function insertLink(view: EditorView) {
   const {state} = view;
@@ -329,4 +401,20 @@ if (typeof console !== 'undefined') {
   for (const [y, m, d, want] of cases) { const got = calendarWeek(new Date(y, m, d, 0, 30)); if (got !== want) console.error('calendarWeek self-check failed', y, m + 1, d, got, want); }
   const strips: [string, string][] = [['my_file_name 2*3', 'my_file_name 2*3'], ['**b** *i* _u_ ==h== `c` ~~s~~', 'b i u h c s'], ['***bi***', 'bi']];
   for (const [s, want] of strips) { const got = stripInline(s); if (got !== want) console.error('clearFormatting self-check failed', s, got, want); }
+  const shifts: [string, number[], boolean, string][] = [
+    ['- a\n- b', [2], true, '- a\n  - b'],
+    ['- [ ] a\n- [ ] b', [2], true, '- [ ] a\n  - [ ] b'],
+    ['1. a\n2. b\n3. c', [2], true, '1. a\n   1. b\n3. c'],
+    ['1. a\n2. b\n3. c', [2, 3], true, '1. a\n   1. b\n   3. c'],
+    ['- a\n  - x\n- b', [3], true, '- a\n  - x\n  - b'],
+    ['- a', [1], true, '- a'],
+    ['- a\n- b\n  - c', [2], true, '- a\n  - b\n    - c'],
+    ['- a\n  - b\n    - c', [2], false, '- a\n- b\n  - c'],
+    ['- a\n  - b', [1], false, '- a\n  - b'],
+  ];
+  for (const [src, lines, right, want] of shifts) {
+    const doc = Text.of(src.split('\n'));
+    const got = EditorState.create({doc}).update({changes: listShiftChanges(doc, lines, right)}).state.doc.toString();
+    if (got !== want) console.error('list shift self-check failed', JSON.stringify(src), lines, right, JSON.stringify(got));
+  }
 }

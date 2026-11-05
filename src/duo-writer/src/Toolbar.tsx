@@ -7,7 +7,7 @@ import {I} from './icons';
 import {
   headingLevelAtCursor, setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote,
   toggleNumbered, insertLink, toggleCodeBlock, insertTable, insertDivider, clearFormatting,
-  headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek, upperCase
+  headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek, upperCase, indentList, outdentList
 } from './commands';
 import {setFindQuery, findNext, countMatches, findQueryField, replaceNext, replaceAll, emptyFind} from './find';
 
@@ -108,7 +108,9 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
     {key: 'lists', group: 4, label: 'Lists', title: 'Lists', icon: I.bullets, run: () => {}, items: [
       {key: 'bullets', group: 4, label: 'Bullet list', title: 'Bullet list (Cmd+Shift+8)', icon: I.bullets, run: () => toggleBullet(view)},
       {key: 'checks', group: 4, label: 'Checklist', title: 'Checklist (Cmd+Shift+9)', icon: I.checks, run: () => toggleChecklist(view)},
-      {key: 'numbers', group: 4, label: 'Numbered list', title: 'Numbered list (Cmd+Shift+7)', icon: I.numbers, run: () => toggleNumbered(view)}
+      {key: 'numbers', group: 4, label: 'Numbered list', title: 'Numbered list (Cmd+Shift+7)', icon: I.numbers, run: () => toggleNumbered(view)},
+      {key: 'indent', group: 4, label: 'Indent', title: 'Indent: make a sub-item (Tab)', icon: I.indent, run: () => indentList(view)},
+      {key: 'outdent', group: 4, label: 'Outdent', title: 'Outdent: move back out (Shift+Tab)', icon: I.outdent, run: () => outdentList(view)}
     ]},
     {key: 'undo', group: 1, label: 'Undo', title: 'Undo (Cmd+Z)', icon: I.undo, run: undo},
     {key: 'redo', group: 1, label: 'Redo', title: 'Redo (Cmd+Shift+Z)', icon: I.redo, run: redo},

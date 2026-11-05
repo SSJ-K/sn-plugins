@@ -7,7 +7,7 @@ import {defaultKeymap, history, historyKeymap, undo, redo} from '@codemirror/com
 import {markdown, markdownLanguage} from '@codemirror/lang-markdown';
 import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
 import {tags} from '@lezer/highlight';
-import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock, insertCalendarWeek, insertToday, upperCase} from './commands';
+import {setHeading, toggleMark, toggleBullet, toggleChecklist, toggleQuote, toggleNumbered, insertLink, toggleCodeBlock, insertCalendarWeek, insertToday, upperCase, indentList, outdentList} from './commands';
 import {findExtension} from './find';
 import {marksExtension, setHideMarks, layoutExtension} from './marks';
 import {highlightExtension} from './highlight';
@@ -96,7 +96,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
     {key: 'Mod-Shift-h', run: toggleMark('==')},
     {key: 'Mod-Shift-w', run: insertCalendarWeek},
     {key: 'Mod-Shift-d', run: insertToday},
-    {key: 'Mod-Shift-u', run: upperCase}
+    {key: 'Mod-Shift-u', run: upperCase},
+    {key: 'Tab', run: indentList},          // list lines only; elsewhere Tab does what it did before
+    {key: 'Shift-Tab', run: outdentList}
   ]);
 
   // Obsidian-style: typing a mark character with text selected wraps the selection instead of replacing it.
