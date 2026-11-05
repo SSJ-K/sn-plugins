@@ -86,3 +86,43 @@ export function findNext(view: EditorView, backwards = false): boolean {
   });
   return true;
 }
+
+/** Every match of the query in the whole note as one change list (case ignored, as in find). */
+export function replaceAllChanges(state: EditorState, text: string) {
+  const query = state.field(findQueryField);
+  const changes: {from: number; to: number; insert: string}[] = [];
+  if (!query) return changes;
+  const c = cursorFor(state, query);
+  while (!c.next().done) changes.push({from: c.value.from, to: c.value.to, insert: text});
+  return changes;
+}
+
+/** Replace every match in one step, so one undo brings them all back. */
+export function replaceAll(view: EditorView, text: string): boolean {
+  const changes = replaceAllChanges(view.state, text);
+  if (changes.length) view.dispatch({changes, userEvent: 'input.replace'});
+  return changes.length > 0;
+}
+
+/** Replace the selected match, then move to the next; if no match is selected, select the next one first. */
+export function replaceNext(view: EditorView, text: string): boolean {
+  const {state} = view;
+  const query = state.field(findQueryField);
+  if (!query) return false;
+  const sel = state.selection.main;
+  if (!sel.empty && normalize(state.sliceDoc(sel.from, sel.to)) === normalize(query)) {
+    view.dispatch({
+      changes: {from: sel.from, to: sel.to, insert: text},
+      selection: EditorSelection.cursor(sel.from + text.length),
+      userEvent: 'input.replace'
+    });
+  }
+  return findNext(view);
+}
+
+// Self-check of replace all (runs once at load, console only).
+if (typeof console !== 'undefined') {
+  const s = EditorState.create({doc: 'Cat cat CAT dog', extensions: findQueryField}).update({effects: setFindQuery.of('cat')}).state;
+  const out = s.update({changes: replaceAllChanges(s, 'x')}).state.doc.toString();
+  if (out !== 'x x x dog') console.error('replaceAll self-check failed', out);
+}

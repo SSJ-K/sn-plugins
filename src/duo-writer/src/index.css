@@ -90,7 +90,7 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
   --dw-gap: 2px;
 }
 @media (hover: none) {
-  .dw-app { --dw-btn: 40px; --dw-gap: 2px; } /* K chose 40 over the design reference's 44 pt floor, 2026-11-04 */
+  .dw-app { --dw-btn: 36px; --dw-gap: 2px; } /* Super's size; K chose 36 so more tools fit, 2026-11-05 (40 from 2026-11-04) */
 }
 /* Dark palette when a dark Standard Notes theme is on (attribute set by index.tsx). */
 [data-dw-dark] .dw-app { --dw-muted: var(--sn-stylekit-neutral-color, #9a9a9a);

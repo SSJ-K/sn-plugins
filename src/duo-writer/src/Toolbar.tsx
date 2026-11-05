@@ -9,7 +9,7 @@ import {
   toggleNumbered, insertLink, toggleCodeBlock, insertTable, insertDivider, clearFormatting,
   headings, jumpTo, insertCalendarWeek, insertToday, calendarWeek, upperCase
 } from './commands';
-import {setFindQuery, findNext, countMatches, findQueryField} from './find';
+import {setFindQuery, findNext, countMatches, findQueryField, replaceNext, replaceAll} from './find';
 
 interface Props {
   view: EditorView;
@@ -39,6 +39,7 @@ const keysOf = (t: Tool) => (/\(([^)]*)\)/.exec(t.title)?.[1] ?? '').split(',')[
 const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: Props) => {
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [replacement, setReplacement] = useState('');
   const [count, setCount] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -69,6 +70,11 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
 
   const onFindKey = (e: KeyboardEvent) => {
     if (e.key === 'Enter') { e.preventDefault(); findNext(view, e.shiftKey); }
+    if (e.key === 'Escape') { e.preventDefault(); closeFind(); }
+  };
+
+  const onReplaceKey = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') { e.preventDefault(); replaceNext(view, replacement); }
     if (e.key === 'Escape') { e.preventDefault(); closeFind(); }
   };
 
@@ -259,6 +265,15 @@ const Toolbar = ({view, undo, redo, selectionTick, findFocusTick, onSizeStep}: P
           <button type="button" className="dw-btn" title="Previous (Shift+Enter)" aria-label="Previous" onMouseDown={keep} onClick={() => findNext(view, true)}><I.prev/></button>
           <button type="button" className="dw-btn" title="Next (Enter)" aria-label="Next" onMouseDown={keep} onClick={() => findNext(view)}><I.next/></button>
           <button type="button" className="dw-btn" title="Close (Esc)" aria-label="Close" onMouseDown={keep} onClick={closeFind}><I.close/></button>
+        </div>
+      )}
+      {findOpen && (
+        <div className="dw-find">
+          <input className="dw-find-input" type="text" placeholder="Replace with"
+                 value={replacement} onInput={(e) => setReplacement((e.target as HTMLInputElement).value)}
+                 onKeyDown={onReplaceKey as any}/>
+          <button type="button" className="dw-btn dw-btn-text" title="Replace this match, then go to the next (Enter)" aria-label="Replace" onMouseDown={keep} onClick={() => replaceNext(view, replacement)}>Replace</button>
+          <button type="button" className="dw-btn dw-btn-text" title="Replace every match (one undo)" aria-label="Replace all" onMouseDown={keep} onClick={() => replaceAll(view, replacement)}>All</button>
         </div>
       )}
     </div>
