@@ -158,6 +158,18 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       applyingExternal = false;
     },
     setPreviewing(on: boolean) { previewing = on; },
+    /** The line at the top of the editor's screen, counted from 0 (preview opens there). */
+    topLine(): number {
+      // 2 px in from the edge, so a line scrolled to 1 px below the top still counts as the top line
+      const block = view.lineBlockAtHeight(Math.max(0, view.scrollDOM.getBoundingClientRect().top - view.documentTop + 2));
+      return view.state.doc.lineAt(block.from).number - 1;
+    },
+    /** Scroll so line n (from 0) sits at the top of the screen; the cursor stays where it is. */
+    scrollToLine(n: number) {
+      if (n === 0) { view.scrollDOM.scrollTop = 0; return; } // keep the page's top margin
+      const line = view.state.doc.line(Math.min(n + 1, view.state.doc.lines));
+      view.dispatch({effects: EditorView.scrollIntoView(line.from, {y: 'start', yMargin: 0})});
+    },
     setLocked(next: boolean) {
       locked = next;
       view.dispatch({effects: editable.reconfigure(EditorView.editable.of(!next))});

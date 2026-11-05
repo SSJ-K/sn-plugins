@@ -2,13 +2,13 @@
 // writing surface, wired to Standard Notes through sn-extension-api.
 // The plugin's own settings (synced, never the note) hold toolbar, hideMarks, sizeSteps and previewNotes.
 import './index.css';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import snApi from 'sn-extension-api';
 import {createEditor} from './editor';
 import Toolbar from './Toolbar';
 import {I} from './icons';
-import {renderPreview} from './preview';
+import {renderPreview, scrollPreviewTo, previewTopLine} from './preview';
 
 type Editor = ReturnType<typeof createEditor>;
 
@@ -31,6 +31,8 @@ const App = () => {
   const [preview, setPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
   const previewRef = useRef(false);
+  const previewBox = useRef<HTMLDivElement>(null);
+  const previewLine = useRef<number | null>(null); // where the sheet opens: the editor's top line
   previewRef.current = preview;
   const [sizeSteps, setSizeSteps] = useState<Record<string, number>>(snApi.extensionMeta?.sizeSteps || {});
   const [screen, setScreen] = useState<ScreenClass>(screenClass());
@@ -70,7 +72,12 @@ const App = () => {
   // Not in the note: the app counts every plugin save to a note as an edit and moves its modified date.
   // shortcut: entries for deleted notes stay in the list; prune them if it ever grows long.
   const setPreviewMode = (next: boolean, persist: boolean) => {
-    if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
+    if (next) {
+      previewLine.current = editorRef.current?.topLine() ?? 0;
+      setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
+    } else if (previewBox.current) {
+      editorRef.current?.scrollToLine(previewTopLine(previewBox.current)); // back where preview was scrolled (K, 2026-11-05)
+    }
     setPreview(next);
     // The editor stays on screen and awake under the preview sheet, so coming back needs no wake-up
     // (iPadOS 27 mishandles wake-ups: 0.8.2, 0.8.4 and 0.9.0 all failed). Typing is blocked meanwhile.
@@ -114,6 +121,11 @@ const App = () => {
     return () => { if (typeof unsubscribe === 'function') unsubscribe(); };
   }, []);
 
+  useLayoutEffect(() => {
+    if (preview && previewBox.current && previewLine.current !== null) scrollPreviewTo(previewBox.current, previewLine.current);
+    previewLine.current = null;
+  }, [preview, previewHtml]);
+
   const step = sizeSteps[screen] || 0;
   const scale = Math.pow(1.1, step);
 
@@ -138,7 +150,7 @@ const App = () => {
       )}
       <div className="dw-host" ref={host}/>
       {/* A read-only sheet over the editor. Taps in it must not take the editor's focus, so no text selection here (K, 2026-11-05). */}
-      {preview && <div className="dw-preview" onMouseDown={(e) => e.preventDefault()}><div className="dw-preview-page" dangerouslySetInnerHTML={{__html: previewHtml}}/></div>}
+      {preview && <div className="dw-preview" ref={previewBox} onMouseDown={(e) => e.preventDefault()}><div className="dw-preview-page" dangerouslySetInnerHTML={{__html: previewHtml}}/></div>}
     </div>
   );
 };
