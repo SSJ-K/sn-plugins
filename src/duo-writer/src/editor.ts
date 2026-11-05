@@ -65,6 +65,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
   const editable = new Compartment();
   let applyingExternal = false;
   let locked = false;
+  let previewing = false;
 
   const toolKeymap = keymap.of([
     {key: 'Mod-b', run: toggleMark('**')},
@@ -127,8 +128,9 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       toolKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       editable.of(EditorView.editable.of(true)),
-      // A locked note ("Prevent editing") refuses every change, tools included; only text from the app gets in.
-      EditorState.changeFilter.of(() => !locked || applyingExternal),
+      // A locked note ("Prevent editing"), or one shown in preview over the editor, refuses every change,
+      // tools included; only text from the app gets in.
+      EditorState.changeFilter.of(() => (!locked && !previewing) || applyingExternal),
       EditorView.updateListener.of((update) => {
         if (update.docChanged && !applyingExternal) {
           hooks.onChange(update.state.doc.toString());
@@ -155,6 +157,7 @@ export function createEditor(parent: HTMLElement, initialText: string, hooks: Ed
       view.dispatch({changes: changedPart(current, text), annotations: Transaction.addToHistory.of(false)});
       applyingExternal = false;
     },
+    setPreviewing(on: boolean) { previewing = on; },
     setLocked(next: boolean) {
       locked = next;
       view.dispatch({effects: editable.reconfigure(EditorView.editable.of(!next))});

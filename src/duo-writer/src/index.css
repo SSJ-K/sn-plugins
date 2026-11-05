@@ -352,8 +352,12 @@ html[data-dw-dark], html[data-dw-dark] body { background-color: var(--sn-styleki
 .dw-play.dw-play-on { background: #57bffa; }
 
 .dw-preview {
-  flex: 1 1 auto;
-  min-height: 0;
+  /* A sheet laid over the editor (0.9.2): the editor underneath stays on screen and awake. */
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* above the editor, below the corner buttons (3) */
+  -webkit-user-select: none;
+  user-select: none;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   background: #fefefe;

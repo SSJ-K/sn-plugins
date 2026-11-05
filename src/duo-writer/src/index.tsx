@@ -72,7 +72,9 @@ const App = () => {
   const setPreviewMode = (next: boolean, persist: boolean) => {
     if (next) setPreviewHtml(renderPreview(editorRef.current?.view.state.doc.toString() ?? ''));
     setPreview(next);
-    if (!next) setTimeout(() => editorRef.current?.view.focus(), 0);
+    // The editor stays on screen and awake under the preview sheet, so coming back needs no wake-up
+    // (iPadOS 27 mishandles wake-ups: 0.8.2, 0.8.4 and 0.9.0 all failed). Typing is blocked meanwhile.
+    editorRef.current?.setPreviewing(next);
     const id = noteId();
     if (persist && id) {
       const notes = {...(snApi.extensionMeta?.previewNotes || {})};
@@ -134,8 +136,9 @@ const App = () => {
         <Toolbar view={editorRef.current.view} undo={editorRef.current.undo} redo={editorRef.current.redo}
                  selectionTick={selectionTick} findFocusTick={findFocusTick} onSizeStep={sizeStep}/>
       )}
-      <div className="dw-host" ref={host} hidden={preview}/>
-      {preview && <div className="dw-preview"><div className="dw-preview-page" dangerouslySetInnerHTML={{__html: previewHtml}}/></div>}
+      <div className="dw-host" ref={host}/>
+      {/* A read-only sheet over the editor. Taps in it must not take the editor's focus, so no text selection here (K, 2026-11-05). */}
+      {preview && <div className="dw-preview" onMouseDown={(e) => e.preventDefault()}><div className="dw-preview-page" dangerouslySetInnerHTML={{__html: previewHtml}}/></div>}
     </div>
   );
 };
